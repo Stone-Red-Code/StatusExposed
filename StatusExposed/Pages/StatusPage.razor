@@ -1,0 +1,104 @@
+﻿@page "/{*ServicePageDomain}"
+@using StatusExposed.Models
+@using StatusExposed.Services
+
+@inject NavigationManager NavigationManger
+@inject IStatusService StatusService
+
+<div class="control-section centerArea">
+    <div class="text-center">
+        @if (doesExist)
+        {
+            @if (string.IsNullOrWhiteSpace(statusInformation?.StatusPageUrl))
+            {
+                <span class="h1"><strong>@ServicePageDomain</strong> is currently <strong>@(statusInformation?.Status ?? Status.Unknown)</strong></span>
+            }
+            else
+            {
+                <a href="@statusInformation?.StatusPageUrl" style="all: unset; cursor: pointer;">
+                    <span class="h1"><strong>@ServicePageDomain</strong> is currently <strong>@(statusInformation?.Status ?? Status.Unknown)</strong></span>
+                </a>
+            }
+            <br />
+            <br />
+            <Span TextColor="TextColor.Muted" Display="Display.InlineFlex" VerticalAlignment="VerticalAlignment.Middle">
+                Response time:
+                @if (statusInformation?.Ping == TimeSpan.MaxValue || statusInformation is null)
+                {
+                    <span class="oi oi-infinity mt-1 ml-1" aria-hidden="true" />
+                }
+                else
+                {
+                    <span class="ml-1">@statusInformation?.FormatedPingTime</span>
+                }
+            </Span>
+            <br />
+
+            if (statusInformation is null)
+            {
+                <Span TextColor="TextColor.Muted">Updating...</Span>
+            }
+            else
+            {
+                <Span TextColor="TextColor.Muted">Updated @statusInformation?.FormatedUpdateTime ago</Span>
+            }
+        }
+        else
+        {
+            <span class="h1"><strong>@ServicePageDomain</strong> is not tracked</span>
+            <br />
+            <br />
+            <a href="add/@ServicePageDomain?.Replace('.', '/')" class="btn btn-link">Add it now</a>
+        }
+    </div>
+</div>
+
+<div style=" position: fixed; bottom: 0; right: 0;">
+
+    @if (reported)
+    {
+        <Tooltip Text="Successfully reported site">
+            <Button Color="Color.Link" Class="shadow-none" Disabled="true"><span class="oi oi-circle-check m-4 text-success" aria-hidden="true" /></Button>
+        </Tooltip>
+    }
+    else
+    {
+        <Tooltip Text="Report site" @onclick="(e)=>reported = true" style="cursor: pointer;">
+            <Button Color="Color.Link" Class="shadow-none zoom"><span class="oi oi-flag m-4 text-danger" aria-hidden="true" /></Button>
+        </Tooltip>
+    }
+
+
+</div>
+
+@code {
+    [Parameter]
+    public string? ServicePageDomain { get; set; }
+
+    private StatusInformation? statusInformation = null;
+
+    private bool doesExist = true;
+
+    private bool reported = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.IsNullOrWhiteSpace(ServicePageDomain))
+        {
+            NavigationManger.NavigateTo("/");
+            return;
+        }
+
+        ServicePageDomain = ServicePageDomain.Replace('/', '.');
+
+        StatusInformation? statusInformation = await StatusService.GetStatusAsync(ServicePageDomain);
+
+        if (statusInformation is null)
+        {
+            doesExist = false;
+            return;
+        }
+
+        this.statusInformation = statusInformation;
+    }
+}

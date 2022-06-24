@@ -1,0 +1,42 @@
+﻿@using StatusExposed.Models
+@using Microsoft.AspNetCore.Components
+@using StatusExposed.Services
+
+@inject NavigationManager NavigationManger
+@inject IStatusService StatusService
+
+
+<Card WhiteText="true" TextAlignment="TextAlignment.Center" Margin="Margin.Is3" Class="status-card">
+    <CardHeader>
+        @if (StatusInformation.Status == Status.Up)
+        {
+            <img class="green-status-circle" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="/>
+        }
+        else
+        {
+            <img class="red-status-circle" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="/>
+        }
+
+        <span class="ml-1">@StatusInformation.ServicePageDomain</span>
+    </CardHeader>
+    <CardBody>
+        <CardTitle><strong>@StatusInformation.ServicePageDomain</strong> is currently <strong>@StatusInformation.Status</strong></CardTitle>
+        <CardText>
+            <a href="@StatusInformation.ServicePageDomain.Replace('.', '/')" class="mx-2"><span class="oi oi-link-intact" aria-hidden="true"></span></a>
+
+            @if (!string.IsNullOrWhiteSpace(StatusInformation.StatusPageUrl))
+            {
+                <a href="@StatusInformation.StatusPageUrl" class="mx-2"><span class="oi oi-external-link" aria-hidden="true"></span></a>
+            }
+        </CardText>
+    </CardBody>
+    <Div Class="card-footer text-muted">
+        Updated @StatusInformation.FormatedUpdateTime ago
+    </Div>
+</Card>
+
+
+@code {
+    [Parameter, EditorRequired]
+    public StatusInformation StatusInformation { get; set; } = null!;
+}

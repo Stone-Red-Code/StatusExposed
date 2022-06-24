@@ -1,0 +1,13 @@
+﻿@page "/"
+
+@using StatusExposed.Models
+@using StatusExposed.Services
+
+@inject IStatusService StatusService
+
+<Div Flex="Flex.JustifyContent.Around.Wrap">
+    @foreach(StatusInformation statusInformation in StatusService.GetStatuses(0,999))
+    {
+        <StatusCard StatusInformation="statusInformation"/>
+    }
+</Div>
