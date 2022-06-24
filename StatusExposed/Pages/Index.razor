@@ -6,8 +6,9 @@
 @inject IStatusService StatusService
 
 <Div Flex="Flex.JustifyContent.Around.Wrap">
-    @foreach(StatusInformation statusInformation in StatusService.GetStatuses(0,999))
+    <!--TODO: Implement infinite scrolling instead of requesting only 100 services-->
+    @foreach (StatusInformation statusInformation in StatusService.GetStatuses(0, 100))
     {
-        <StatusCard StatusInformation="statusInformation"/>
+        <StatusCard StatusInformation="statusInformation" />
     }
 </Div>
