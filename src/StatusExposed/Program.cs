@@ -41,15 +41,4 @@ app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
-using (IServiceScope? scope =
-  app.Services.CreateScope())
-using (DatabaseContext? context = scope.ServiceProvider.GetService<DatabaseContext>())
-{
-    ILogger? logger = scope.ServiceProvider.GetService<ILogger>();
-    if (context?.Database.EnsureCreated() == true)
-    {
-        logger?.LogInformation("Automatically created database because it didn't exist.");
-    }
-}
-
 app.Run();
