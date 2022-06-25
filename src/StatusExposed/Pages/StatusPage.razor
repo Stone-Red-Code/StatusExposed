@@ -53,8 +53,9 @@
     </div>
 </div>
 
-<div style=" position: fixed; bottom: 0; right: 0;">
 
+<!-- Use when implementing management system
+<div style=" position: fixed; bottom: 0; right: 0;">
     @if (reported)
     {
         <Tooltip Text="Successfully reported site">
@@ -67,9 +68,8 @@
             <Button Color="Color.Link" Class="shadow-none zoom"><span class="oi oi-flag m-4 text-danger" aria-hidden="true" /></Button>
         </Tooltip>
     }
-
-
 </div>
+-->
 
 @code {
     [Parameter]
@@ -79,7 +79,8 @@
 
     private bool doesExist = true;
 
-    private bool reported = false;
+    // Use when implementing management system
+    // private bool reported = false;
 
     protected override async Task OnParametersSetAsync()
     {

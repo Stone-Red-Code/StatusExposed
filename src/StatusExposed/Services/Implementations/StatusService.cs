@@ -16,6 +16,7 @@ public class StatusService : IStatusService
         this.logger = logger;
     }
 
+    ///<inheritdoc cref="IStatusService.GetStatusAsync(string)(string, string?)"/>
     public async Task<StatusInformation?> GetStatusAsync(string domain)
     {
         domain = domain.Trim().ToLower();
@@ -23,12 +24,14 @@ public class StatusService : IStatusService
         return await mainDatabaseContext.Services.FindAsync(domain);
     }
 
+    ///<inheritdoc cref="IStatusService.AddServiceAsync(string, string?)"/>
     public async Task AddServiceAsync(string domain, string? statusPageUrl)
     {
         domain = domain.Trim().ToLower();
 
         if (mainDatabaseContext.Services.Any(s => s.ServicePageDomain == domain))
         {
+            logger.LogWarning("Tried to add already existing service: {domain}", domain);
             return;
         }
 
@@ -43,6 +46,12 @@ public class StatusService : IStatusService
         _ = await mainDatabaseContext.SaveChangesAsync();
 
         await UpdateStatus(domain);
+    }
+
+    ///<inheritdoc cref="IStatusService.GetStatuses(int, int)/>
+    public IEnumerable<StatusInformation> GetStatuses(int index, int count)
+    {
+        return mainDatabaseContext.Services.OrderByDescending(s => s.LastUpdateTime).Skip(index).Take(count);
     }
 
     private async Task UpdateStatus(string domain)
@@ -69,6 +78,7 @@ public class StatusService : IStatusService
 
         _ = await mainDatabaseContext.SaveChangesAsync();
 
+        // Check if URL is reachable.
         async Task CheckUrl(string url)
         {
             if (statusInformation is null)
@@ -78,10 +88,10 @@ public class StatusService : IStatusService
 
             try
             {
-                Stopwatch stopWatch = Stopwatch.StartNew();
+                Stopwatch pingStopWatch = Stopwatch.StartNew();
                 HttpResponseMessage? response = await client.GetAsync(url);
-                stopWatch.Stop();
-                statusInformation.Ping = TimeSpan.FromMilliseconds(stopWatch.ElapsedMilliseconds);
+                pingStopWatch.Stop();
+                statusInformation.Ping = TimeSpan.FromMilliseconds(pingStopWatch.ElapsedMilliseconds);
 
                 if (response?.IsSuccessStatusCode == true)
                 {
@@ -100,10 +110,5 @@ public class StatusService : IStatusService
                 statusInformation.Ping = TimeSpan.MaxValue;
             }
         }
-    }
-
-    public IEnumerable<StatusInformation> GetStatuses(int index, int count)
-    {
-        return mainDatabaseContext.Services.OrderByDescending(s => s.LastUpdateTime).Skip(index).Take(count);
     }
 }
