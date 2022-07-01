@@ -5,6 +5,7 @@
 
 # Project-specific files
 *.sqlite
+/src/StatusExposed/.config/dotnet-tools.json
 
 # User-specific files
 *.rsuser
@@ -305,8 +306,6 @@ node_modules/
 *.dsp
 
 # Visual Studio 6 technical files 
-*.ncb
-*.aps
 
 # Visual Studio LightSwitch build output
 **/*.HTMLClient/GeneratedArtifacts
