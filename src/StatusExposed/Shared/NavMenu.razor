@@ -65,8 +65,7 @@
     }
 
     private void ToggleNavMenu()
-    {
-        // Check if mobile device
+    {  
         if (isMobile)
         {
             collapseNavMenuDesktop = false;
@@ -84,8 +83,9 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         WindowDimension dimension = await JsRuntime.InvokeAsync<WindowDimension>("getWindowDimensions");
+        // Check if mobile device
         isMobile = dimension.Width <= 700;
-         StateHasChanged();
+        StateHasChanged();
     }
 
     public class WindowDimension
