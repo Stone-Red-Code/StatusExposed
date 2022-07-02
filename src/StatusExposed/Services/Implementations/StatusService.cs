@@ -29,13 +29,17 @@ public class StatusService : IStatusService
     {
         domain = domain.Trim().ToLower();
 
-        if (mainDatabaseContext.Services.Any(s => s.ServicePageDomain == domain))
+        StatusInformation? statusInformation = await mainDatabaseContext.Services.FindAsync(domain);
+
+        if (statusInformation is not null)
         {
             logger.LogWarning("Tried to add already existing service: {domain}", domain);
+            statusInformation.StatusPageUrl = statusPageUrl;
+            _ = await mainDatabaseContext.SaveChangesAsync();
             return;
         }
 
-        StatusInformation statusInformation = new StatusInformation()
+        statusInformation = new StatusInformation()
         {
             ServicePageDomain = domain,
             StatusPageUrl = statusPageUrl,
