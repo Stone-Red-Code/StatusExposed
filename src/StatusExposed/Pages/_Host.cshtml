@@ -6,3 +6,12 @@
 }
 
 <component type="typeof(App)" render-mode="ServerPrerendered" />
+
+<script>
+    window.getWindowDimensions = function() {
+        return {
+            width: document.body.clientWidth,
+            height: document.body.clientHeight
+        };
+    };
+</script>

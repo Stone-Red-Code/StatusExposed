@@ -1,13 +1,16 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using System.Diagnostics
+@inject IJSRuntime JsRuntime
+
+<div class="top-row ps-3 navbar-dark @navMenuCssClass" style="@navMenuWidth">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">StatusExposed</a>
+        <a class="navbar-brand" style="cursor:pointer" @onclick="ToggleNavMenu">StatusExposed</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>
 </div>
 
-<div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
+<div class="@navMenuCssDisplayClass">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
@@ -29,17 +32,65 @@
     </nav>
 </div>
 
-<div class="m-1 text-secondary" style=" position: fixed; bottom: 0; left: 0;">
-    ©@DateTime.UtcNow.Year - <a href="legal" class="text-secondary">Legal Notice</a>
+<div class="m-1 text-white-50" style=" position: fixed; bottom: 0; left: 0; z-index: 999">
+    <a href="https://github.com/Stone-Red-Code/StatusExposed/blob/main/LICENCE" class="text-white-50">©@DateTime.UtcNow.Year</a> - <a href="legal" class="text-white-50">Legal Notice</a>
 </div>
 
 @code {
-    private bool collapseNavMenu = true;
+    private bool collapseNavMenuMobile = true;
+    private bool collapseNavMenuDesktop = false;
+    private bool isMobile = false;
 
-    private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+    private string? navMenuCssDisplayClass => collapseNavMenuDesktop || (collapseNavMenuMobile && isMobile) ? "d-none" : null;
+    private string? navMenuCssClass => collapseNavMenuDesktop ? null : "navbar";
+    private string? navMenuWidth
+    {
+
+        get
+        {
+            if (isMobile)
+            {
+                return null;
+            }
+
+            if (collapseNavMenuDesktop)
+            {
+                return "width:0px";
+            }
+            else
+            {
+                return "width:250px";
+            }
+        }
+    }
 
     private void ToggleNavMenu()
     {
-        collapseNavMenu = !collapseNavMenu;
+        // Check if mobile device
+        if (isMobile)
+        {
+            collapseNavMenuDesktop = false;
+            collapseNavMenuMobile = !collapseNavMenuMobile;
+        }
+        else
+        {
+            collapseNavMenuDesktop = !collapseNavMenuDesktop;
+            collapseNavMenuMobile = false;
+        }
+    }
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        WindowDimension dimension = await JsRuntime.InvokeAsync<WindowDimension>("getWindowDimensions");
+        isMobile = dimension.Width <= 700;
+         StateHasChanged();
+    }
+
+    public class WindowDimension
+    {
+        public int Width { get; set; }
+        public int Height { get; set; }
     }
 }
