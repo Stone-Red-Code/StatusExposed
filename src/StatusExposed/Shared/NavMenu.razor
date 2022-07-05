@@ -1,4 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject IConfiguration Configuration
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">StatusExposed</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -30,8 +32,13 @@
 </div>
 
 
-<div class="m-1 text-white-50" style=" position: fixed; bottom: 0; left: 0; z-index: 999">
-    <a href="https://github.com/Stone-Red-Code/StatusExposed/blob/main/LICENCE" class="text-white-50">©@DateTime.UtcNow.Year</a> - <a href="legal" class="text-white-50">Legal Notice</a>
+<div class="ml-1 text-white-50" style=" position: fixed; bottom: 0; left: 0; z-index: 999">
+    <a href="https://github.com/Stone-Red-Code/StatusExposed/blob/main/LICENCE" class="text-white-50">©@DateTime.UtcNow.Year</a>
+
+    @if (File.Exists(@Configuration["LegalNotePath"]))
+    {
+        <span> - <a href="legal" class="text-white-50">Legal Notice</a></span>
+    }
 </div>
 
 @code {
