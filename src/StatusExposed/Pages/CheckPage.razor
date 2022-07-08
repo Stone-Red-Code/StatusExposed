@@ -13,7 +13,7 @@
             <Validation Validator="ValidateDomain">
                 <Field>
                     <FieldLabel>Website domain</FieldLabel>
-                    <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter">
+                    <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter" Autofocus="true">
                         <Feedback>
                             <ValidationNone>Enter a domain.</ValidationNone>
                             <ValidationSuccess>Domain is valid.</ValidationSuccess>
