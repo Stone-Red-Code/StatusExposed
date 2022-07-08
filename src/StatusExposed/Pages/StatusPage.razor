@@ -98,7 +98,9 @@ else
 
     private string? EscapedServicePageDomain => ServicePageDomain?.Replace('.', '/');
     private string PlainStatusString => $"{ServicePageDomain} is currently {(statusInformation?.Status ?? Status.Unknown)}";
-    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.FormatedPingTime)} | {(statusInformation is null ? "Updating..." : ($"Updated {statusInformation.FormatedUpdateTime} ago"))}";
+    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.FormatedPingTime)} | "
+                                    + $"{(statusInformation is null || statusInformation?.Ping == TimeSpan.MaxValue ? "Updating..." : ($"Updated {statusInformation.FormatedUpdateTime} ago"))}";
+
     private string ThemeColor
     {
         get
