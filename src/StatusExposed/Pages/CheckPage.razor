@@ -1,4 +1,4 @@
-﻿@page "/add/{*autoFillDomain}"
+﻿@page "/check"
 
 @using System.Text.RegularExpressions
 @using StatusExposed.Services
@@ -13,7 +13,7 @@
             <Validation Validator="ValidateDomain">
                 <Field>
                     <FieldLabel>Website domain</FieldLabel>
-                    <TextEdit Placeholder="example.com" @bind-Text="domainText">
+                    <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter">
                         <Feedback>
                             <ValidationNone>Enter a domain.</ValidationNone>
                             <ValidationSuccess>Domain is valid.</ValidationSuccess>
@@ -22,21 +22,7 @@
                     </TextEdit>
                 </Field>
             </Validation>
-
-            <Validation Validator="ValidateUrl">
-                <Field>
-                    <FieldLabel>Official status page (Optional)</FieldLabel>
-                    <TextEdit Placeholder="https://status.example.com" @bind-Text="statusPageUrlText">
-                        <Feedback>
-                            <ValidationNone>Enter a URL.</ValidationNone>
-                            <ValidationSuccess>URL is valid.</ValidationSuccess>
-                            <ValidationError>Enter a valid URL!</ValidationError>
-                        </Feedback>
-                    </TextEdit>
-                </Field>
-            </Validation>
-
-            <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Submit</Button>
+            <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Check</Button>
         </Validations>
     </div>
 </div>
@@ -49,14 +35,13 @@
     private bool isLoading;
 
     private string? domainText;
-    private string? statusPageUrlText;
 
     protected override void OnParametersSet()
     {
         domainText = AutoFillDomain?.Replace('/', '.');
     }
 
-    private async Task Submit()
+    private void Submit()
     {
         if (domainText is null || !isValid)
         {
@@ -64,7 +49,6 @@
         }
 
         isLoading = true;
-        await StatusService.AddServiceAsync(domainText, statusPageUrlText);
         NavigationManger.NavigateTo($"/{domainText.Replace('.', '/')}");
     }
 
@@ -92,22 +76,11 @@
         e.Status = ValidationStatus.Error;
     }
 
-    void ValidateUrl(ValidatorEventArgs e)
+    public void Enter(KeyboardEventArgs e)
     {
-        string? url = e.Value?.ToString();
-
-        if (string.IsNullOrWhiteSpace(url))
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
-            e.Status = ValidationStatus.None;
-            return;
+            Submit();
         }
-
-        if (Regex.IsMatch(url, @"^http(s)?://([\w-]+.)+[\w-]+(/[\w- ./?%&=])?$") && url.Contains('.'))
-        {
-            e.Status = ValidationStatus.Success;
-            return;
-        }
-
-        e.Status = ValidationStatus.Error;
     }
 }
