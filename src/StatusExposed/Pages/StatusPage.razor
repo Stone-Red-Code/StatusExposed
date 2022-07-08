@@ -5,6 +5,28 @@
 @inject NavigationManager NavigationManger
 @inject IStatusService StatusService
 
+<PageTitle>@ServicePageDomain is currently @(statusInformation?.Status ?? Status.Unknown)</PageTitle>
+
+<HeadContent>
+    <!-- HTML Meta Tags -->
+    <title>@PlainStatusString</title>
+    <meta name="description" content="Response time: 397 milliseconds | Updated 664 milliseconds ago">
+    <meta name="theme-color" content="@ThemeColor">
+
+    <!-- Facebook Meta Tags -->
+    <meta property="og:url" content="https://status.exposed/status/@EscapedServicePageDomain">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="@PlainStatusString">
+    <meta property="og:description" content="@PlainInfoString">
+
+    <!-- Twitter Meta Tags -->
+    <meta name="twitter:card" content="summary">
+    <meta property="twitter:domain" content="status.exposed">
+    <meta property="twitter:url" content="https://status.exposed/status/@EscapedServicePageDomain">
+    <meta name="twitter:title" content="@PlainStatusString">
+    <meta name="twitter:description" content="@PlainInfoString">
+</HeadContent>
+
 <div class="control-section centerArea">
     <div class="text-center">
         @if (doesExist)
@@ -48,7 +70,7 @@
             <span class="h1"><strong>@ServicePageDomain</strong> is not tracked</span>
             <br />
             <br />
-            <a href="add/@ServicePageDomain?.Replace('.', '/')" class="btn btn-link">Add it now</a>
+            <a href="add/@EscapedServicePageDomain" class="btn btn-link">Add it now</a>
         }
     </div>
 </div>
@@ -56,24 +78,39 @@
 
 <!-- Use when implementing management system
 <div style=" position: fixed; bottom: 0; right: 0;">
-    @if (reported)
-    {
+@if (reported)
+{
         <Tooltip Text="Successfully reported site">
             <Button Color="Color.Link" Class="shadow-none" Disabled="true"><span class="oi oi-circle-check m-4 text-success" aria-hidden="true" /></Button>
         </Tooltip>
-    }
-    else
-    {
+}
+else
+{
         <Tooltip Text="Report site" @onclick="(e)=>reported = true" style="cursor: pointer;">
             <Button Color="Color.Link" Class="shadow-none zoom"><span class="oi oi-flag m-4 text-danger" aria-hidden="true" /></Button>
         </Tooltip>
-    }
+}
 </div>
 -->
-
 @code {
     [Parameter]
     public string? ServicePageDomain { get; set; }
+
+    private string? EscapedServicePageDomain => ServicePageDomain?.Replace('.', '/');
+    private string PlainStatusString => $"{ServicePageDomain} is currently {(statusInformation?.Status ?? Status.Unknown)}";
+    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.FormatedPingTime)} | {(statusInformation is null ? "Updating..." : ($"Updated {statusInformation.FormatedUpdateTime} ago"))}";
+    private string ThemeColor
+    {
+        get
+        {
+            return statusInformation?.Status switch
+            {
+                Status.Up => "#00ff00",
+                Status.Down => "#ff0000",
+                _ => "#ffff00"
+            };
+        }
+    }
 
     private StatusInformation? statusInformation = null;
 
