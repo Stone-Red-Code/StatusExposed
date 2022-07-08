@@ -22,7 +22,7 @@
     <CardBody>
         <CardTitle><strong>@StatusInformation.ServicePageDomain</strong> is currently <strong>@StatusInformation.Status</strong></CardTitle>
         <CardText>
-            <a href="@StatusInformation.ServicePageDomain.Replace('.', '/')" class="mx-2"><span class="oi oi-link-intact" aria-hidden="true"></span></a>
+            <a href="status/@StatusInformation.ServicePageDomain.Replace('.', '/')" class="mx-2"><span class="oi oi-link-intact" aria-hidden="true"></span></a>
 
             @if (!string.IsNullOrWhiteSpace(StatusInformation.StatusPageUrl))
             {
