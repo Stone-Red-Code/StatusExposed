@@ -65,7 +65,7 @@
 
         isLoading = true;
         await StatusService.AddServiceAsync(domainText, statusPageUrlText);
-        NavigationManger.NavigateTo($"/{domainText.Replace('.', '/')}");
+        NavigationManger.NavigateTo($"status/{domainText.Replace('.', '/')}");
     }
 
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
