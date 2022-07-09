@@ -6,12 +6,11 @@
 @inject NavigationManager NavigationManger
 @inject IStatusService StatusService
 
-<PageTitle>@ServicePageDomain is currently @(statusInformation?.Status ?? Status.Unknown)</PageTitle>
+<PageTitle>@PlainStatusString</PageTitle>
 
 <HeadContent>
     <!-- HTML Meta Tags -->
-    <title>@PlainStatusString</title>
-    <meta name="description" content="Response time: 397 milliseconds | Updated 664 milliseconds ago">
+    <meta name="description" content="@PlainStatusString">
     <meta name="theme-color" content="@ThemeColor">
 
     <!-- Facebook Meta Tags -->
