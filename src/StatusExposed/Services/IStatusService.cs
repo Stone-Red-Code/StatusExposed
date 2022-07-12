@@ -8,7 +8,7 @@ public interface IStatusService
     /// Gets the current status of a service.
     /// </summary>
     /// <param name="domain">Domain of the service.</param>
-    /// <returns><see cref="StatusInformation"/> for the requested service.</returns>
+    /// <returns><see cref="StatusInformation"/> for the requested service or <see langword="null"/> if not found.</returns>
     Task<StatusInformation?> GetStatusAsync(string domain);
 
     /// <summary>

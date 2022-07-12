@@ -52,7 +52,7 @@ public class StatusService : IStatusService
         await UpdateStatus(domain);
     }
 
-    ///<inheritdoc cref="IStatusService.GetStatuses(int, int)/>
+    ///<inheritdoc cref="IStatusService.GetStatuses(int, int)"/>
     public IEnumerable<StatusInformation> GetStatuses(int index, int count)
     {
         return mainDatabaseContext.Services.OrderByDescending(s => s.LastUpdateTime).Skip(index).Take(count);
