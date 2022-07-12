@@ -79,7 +79,7 @@ public class StatusService : IStatusService
 
         StatusInformation? statusInformation = await mainDatabaseContext.Services
             .Include(s => s.StatusHistory)
-            .FirstAsync(s => s.ServicePageDomain == domain);
+            .FirstOrDefaultAsync(s => s.ServicePageDomain == domain);
 
         if (statusInformation is null || (DateTime.UtcNow - statusInformation.CurrentStatusHistoryData.LastUpdateTime < TimeSpan.FromMinutes(10)))
         {
