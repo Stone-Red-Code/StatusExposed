@@ -102,6 +102,11 @@ public class StatusService : IStatusService
 
         statusInformation.CurrentStatusHistoryData.LastUpdateTime = DateTime.UtcNow;
 
+        // Limit history entries to 144 (10 min * 100 entries = 24h history)
+        statusInformation.StatusHistory = statusInformation.StatusHistory
+            .OrderByDescending(h => h.LastUpdateTime)
+            .Take(144).ToList();
+
         _ = await mainDatabaseContext.SaveChangesAsync();
 
         // Check if URL is reachable.
