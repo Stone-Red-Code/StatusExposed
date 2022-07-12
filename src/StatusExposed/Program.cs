@@ -12,6 +12,7 @@ WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
+builder.Services.AddSingleton<IScheduledUpdateService, ScheduledUpdateService>();
 builder.Services.AddScoped<DatabaseContext>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services
@@ -40,6 +41,8 @@ app.UseRouting();
 
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+app.Services.GetServices<IScheduledUpdateService>().First().Start(TimeSpan.FromMinutes(10));
 
 using (IServiceScope scope = app.Services.CreateScope())
 using (DatabaseContext? context = scope.ServiceProvider.GetService<DatabaseContext>())

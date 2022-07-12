@@ -9,18 +9,26 @@ public class StatusService : IStatusService
 {
     private readonly DatabaseContext mainDatabaseContext;
     public readonly ILogger<StatusService> logger;
+    private readonly IConfiguration configuration;
 
-    public StatusService(DatabaseContext mainDatabaseContext, ILogger<StatusService> logger)
+    public StatusService(DatabaseContext mainDatabaseContext, ILogger<StatusService> logger, IConfiguration configuration)
     {
         this.mainDatabaseContext = mainDatabaseContext;
         this.logger = logger;
+        this.configuration = configuration;
     }
 
     ///<inheritdoc cref="IStatusService.GetStatusAsync(string)(string, string?)"/>
     public async Task<StatusInformation?> GetStatusAsync(string domain)
     {
         domain = domain.Trim().ToLower();
-        await UpdateStatus(domain);
+
+        // Only manually update if automatic updates are disabled
+        if (!configuration.GetValue<bool>("AutomaticUpdates"))
+        {
+            await UpdateStatusAsync(domain);
+        }
+
         return await mainDatabaseContext.Services.FindAsync(domain);
     }
 
@@ -49,7 +57,7 @@ public class StatusService : IStatusService
         _ = await mainDatabaseContext.Services.AddAsync(statusInformation);
         _ = await mainDatabaseContext.SaveChangesAsync();
 
-        await UpdateStatus(domain);
+        await UpdateStatusAsync(domain);
     }
 
     ///<inheritdoc cref="IStatusService.GetStatuses(int, int)/>
@@ -58,7 +66,8 @@ public class StatusService : IStatusService
         return mainDatabaseContext.Services.OrderByDescending(s => s.LastUpdateTime).Skip(index).Take(count);
     }
 
-    private async Task UpdateStatus(string domain)
+    ///<inheritdoc cref="IStatusService.UpdateStatusAsync(string)"/>
+    public async Task UpdateStatusAsync(string domain)
     {
         domain = domain.Trim().ToLower();
 
@@ -69,7 +78,10 @@ public class StatusService : IStatusService
             return;
         }
 
-        HttpClient client = new HttpClient();
+        HttpClient client = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(30)
+        };
 
         await CheckUrl($"https://{domain}");
 

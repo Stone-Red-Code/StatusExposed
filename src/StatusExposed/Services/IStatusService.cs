@@ -26,4 +26,11 @@ public interface IStatusService
     /// <param name="count">The max amount of services to return.</param>
     /// <returns>The <see cref="StatusInformation"/>s of all services.</returns>
     IEnumerable<StatusInformation> GetStatuses(int index, int count);
+
+    /// <summary>
+    /// Updates the status of the specified domain.
+    /// </summary>
+    /// <param name="domain">Domain of the service.</param>
+    /// <returns>A <see cref="Task"/> to await</returns>
+    Task UpdateStatusAsync(string domain);
 }
