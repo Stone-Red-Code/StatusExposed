@@ -1,4 +1,6 @@
-﻿using StatusExposed.Database;
+﻿using Microsoft.EntityFrameworkCore;
+
+using StatusExposed.Database;
 using StatusExposed.Models;
 
 using System.Diagnostics;
@@ -51,7 +53,6 @@ public class StatusService : IStatusService
         {
             ServicePageDomain = domain,
             StatusPageUrl = statusPageUrl,
-            LastUpdateTime = DateTime.MinValue
         };
 
         _ = await mainDatabaseContext.Services.AddAsync(statusInformation);
@@ -63,7 +64,12 @@ public class StatusService : IStatusService
     ///<inheritdoc cref="IStatusService.GetStatuses(int, int)/>
     public IEnumerable<StatusInformation> GetStatuses(int index, int count)
     {
-        return mainDatabaseContext.Services.OrderByDescending(s => s.LastUpdateTime).Skip(index).Take(count);
+        return mainDatabaseContext.Services.Include(s => s.StatusHistory)
+            .AsSplitQuery()
+            .OrderByDescending(s => s.StatusHistory
+                .OrderByDescending(s => s.LastUpdateTime)
+                .First().LastUpdateTime).Skip(index)
+            .Take(count);
     }
 
     ///<inheritdoc cref="IStatusService.UpdateStatusAsync(string)"/>
@@ -71,12 +77,16 @@ public class StatusService : IStatusService
     {
         domain = domain.Trim().ToLower();
 
-        StatusInformation? statusInformation = await mainDatabaseContext.Services.FindAsync(domain);
+        StatusInformation? statusInformation = await mainDatabaseContext.Services
+            .Include(s => s.StatusHistory)
+            .FirstAsync(s => s.ServicePageDomain == domain);
 
-        if (statusInformation is null || (DateTime.UtcNow - statusInformation.LastUpdateTime < TimeSpan.FromMinutes(10)))
+        if (statusInformation is null || (DateTime.UtcNow - statusInformation.CurrentStatusHistoryData.LastUpdateTime < TimeSpan.FromMinutes(10)))
         {
             return;
         }
+
+        statusInformation.StatusHistory.Add(new StatusHistoryData() { LastUpdateTime = DateTime.MaxValue });
 
         HttpClient client = new HttpClient
         {
@@ -85,12 +95,12 @@ public class StatusService : IStatusService
 
         await CheckUrl($"https://{domain}");
 
-        if (statusInformation.Status != Status.Up)
+        if (statusInformation.CurrentStatusHistoryData.Status != Status.Up)
         {
             await CheckUrl($"http://{domain}");
         }
 
-        statusInformation.LastUpdateTime = DateTime.UtcNow;
+        statusInformation.CurrentStatusHistoryData.LastUpdateTime = DateTime.UtcNow;
 
         _ = await mainDatabaseContext.SaveChangesAsync();
 
@@ -107,23 +117,23 @@ public class StatusService : IStatusService
                 Stopwatch pingStopWatch = Stopwatch.StartNew();
                 HttpResponseMessage? response = await client.GetAsync(url);
                 pingStopWatch.Stop();
-                statusInformation.Ping = TimeSpan.FromMilliseconds(pingStopWatch.ElapsedMilliseconds);
+                statusInformation.CurrentStatusHistoryData.Ping = TimeSpan.FromMilliseconds(pingStopWatch.ElapsedMilliseconds);
 
                 if (response?.IsSuccessStatusCode == true)
                 {
-                    statusInformation.Status = Status.Up;
+                    statusInformation.CurrentStatusHistoryData.Status = Status.Up;
                 }
                 else
                 {
-                    statusInformation.Status = Status.Down;
+                    statusInformation.CurrentStatusHistoryData.Status = Status.Down;
                 }
             }
             catch (HttpRequestException)
             {
                 logger.LogDebug("HTTP request failed for {url}", url);
 
-                statusInformation.Status = Status.Down;
-                statusInformation.Ping = TimeSpan.MaxValue;
+                statusInformation.CurrentStatusHistoryData.Status = Status.Down;
+                statusInformation.CurrentStatusHistoryData.Ping = TimeSpan.MaxValue;
             }
         }
     }

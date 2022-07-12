@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StatusExposed.Database;
 
@@ -10,19 +11,16 @@ using StatusExposed.Database;
 namespace StatusExposed.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220712122635_Add History Data")]
+    partial class AddHistoryData
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.6");
 
             modelBuilder.Entity("StatusExposed.Models.StatusHistoryData", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime>("LastUpdateTime")
                         .HasColumnType("TEXT");
 
@@ -35,7 +33,7 @@ namespace StatusExposed.Migrations
                     b.Property<string>("StatusInformationServicePageDomain")
                         .HasColumnType("TEXT");
 
-                    b.HasKey("Id");
+                    b.HasKey("LastUpdateTime");
 
                     b.HasIndex("StatusInformationServicePageDomain");
 
@@ -47,15 +45,10 @@ namespace StatusExposed.Migrations
                     b.Property<string>("ServicePageDomain")
                         .HasColumnType("TEXT");
 
-                    b.Property<int>("CurrentStatusHistoryDataId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<string>("StatusPageUrl")
                         .HasColumnType("TEXT");
 
                     b.HasKey("ServicePageDomain");
-
-                    b.HasIndex("CurrentStatusHistoryDataId");
 
                     b.ToTable("Services");
                 });
@@ -65,17 +58,6 @@ namespace StatusExposed.Migrations
                     b.HasOne("StatusExposed.Models.StatusInformation", null)
                         .WithMany("StatusHistory")
                         .HasForeignKey("StatusInformationServicePageDomain");
-                });
-
-            modelBuilder.Entity("StatusExposed.Models.StatusInformation", b =>
-                {
-                    b.HasOne("StatusExposed.Models.StatusHistoryData", "CurrentStatusHistoryData")
-                        .WithMany()
-                        .HasForeignKey("CurrentStatusHistoryDataId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("CurrentStatusHistoryData");
                 });
 
             modelBuilder.Entity("StatusExposed.Models.StatusInformation", b =>

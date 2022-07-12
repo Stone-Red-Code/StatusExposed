@@ -33,25 +33,25 @@
         {
             @if (string.IsNullOrWhiteSpace(statusInformation?.StatusPageUrl))
             {
-                <span class="h1"><strong>@ServicePageDomain</strong> is currently <strong>@(statusInformation?.Status ?? Status.Unknown)</strong></span>
+                <span class="h1"><strong>@ServicePageDomain</strong> is currently <strong>@(statusInformation?.CurrentStatusHistoryData.Status ?? Status.Unknown)</strong></span>
             }
             else
             {
                 <a href="@statusInformation?.StatusPageUrl" style="all: unset; cursor: pointer;">
-                    <span class="h1"><strong>@ServicePageDomain</strong> is currently <strong>@(statusInformation?.Status ?? Status.Unknown)</strong></span>
+                    <span class="h1"><strong>@ServicePageDomain</strong> is currently <strong>@(statusInformation?.CurrentStatusHistoryData.Status ?? Status.Unknown)</strong></span>
                 </a>
             }
             <br />
             <br />
             <Span TextColor="TextColor.Muted" Display="Display.InlineFlex" VerticalAlignment="VerticalAlignment.Middle">
                 Response time:
-                @if (statusInformation?.Ping == TimeSpan.MaxValue || statusInformation is null)
+                @if (statusInformation?.CurrentStatusHistoryData.Ping == TimeSpan.MaxValue || statusInformation is null)
                 {
                     <span class="oi oi-infinity mt-1 ml-1" aria-hidden="true" />
                 }
                 else
                 {
-                    <span class="ml-1">@statusInformation?.FormatedPingTime</span>
+                    <span class="ml-1">@statusInformation?.CurrentStatusHistoryData.FormatedPingTime</span>
                 }
             </Span>
             <br />
@@ -62,7 +62,7 @@
             }
             else
             {
-                <Span TextColor="TextColor.Muted">Updated @statusInformation?.FormatedUpdateTime ago</Span>
+                <Span TextColor="TextColor.Muted">Updated @statusInformation?.CurrentStatusHistoryData.FormatedUpdateTime ago</Span>
             }
         }
         else
@@ -97,15 +97,15 @@ else
     public string? ServicePageDomain { get; set; }
 
     private string? EscapedServicePageDomain => ServicePageDomain?.Replace('.', '/');
-    private string PlainStatusString => $"{ServicePageDomain} is currently {(statusInformation?.Status ?? Status.Unknown)}";
-    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.FormatedPingTime)} | "
-                                    + $"{(statusInformation is null || statusInformation?.Ping == TimeSpan.MaxValue ? "Updating..." : ($"Updated {statusInformation?.FormatedUpdateTime} ago"))}";
+    private string PlainStatusString => $"{ServicePageDomain} is currently {(statusInformation?.CurrentStatusHistoryData.Status ?? Status.Unknown)}";
+    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.CurrentStatusHistoryData.FormatedPingTime)} | "
+                                    + $"{(statusInformation is null || statusInformation?.CurrentStatusHistoryData.Ping == TimeSpan.MaxValue ? "Updating..." : ($"Updated {statusInformation?.CurrentStatusHistoryData.FormatedUpdateTime} ago"))}";
 
     private string ThemeColor
     {
         get
         {
-            return statusInformation?.Status switch
+            return statusInformation?.CurrentStatusHistoryData.Status switch
             {
                 Status.Up => "#00ff00",
                 Status.Down => "#ff0000",
