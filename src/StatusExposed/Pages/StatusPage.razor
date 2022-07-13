@@ -28,17 +28,17 @@
 </HeadContent>
 
 <div class="control-section centerArea">
-    <div class="text-center">
+    <div class="text-center w-100">
         @if (doesExist)
         {
             @if (string.IsNullOrWhiteSpace(statusInformation?.StatusPageUrl))
             {
-                <span class="h1"><strong>@ServicePageDomain</strong> is currently <strong>@(statusInformation?.CurrentStatusHistoryData.Status ?? Status.Unknown)</strong></span>
+                <span class="h1"><strong class="text-break">@ServicePageDomain</strong> is currently <strong>@(statusInformation?.CurrentStatusHistoryData.Status ?? Status.Unknown)</strong></span>
             }
             else
             {
                 <a href="@statusInformation?.StatusPageUrl" style="all: unset; cursor: pointer;">
-                    <span class="h1"><strong>@ServicePageDomain</strong> is currently <strong>@(statusInformation?.CurrentStatusHistoryData.Status ?? Status.Unknown)</strong></span>
+                    <span class="h1"><strong class="text-break">@ServicePageDomain</strong> is currently <strong>@(statusInformation?.CurrentStatusHistoryData.Status ?? Status.Unknown)</strong></span>
                 </a>
             }
             <br />
@@ -64,6 +64,15 @@
             {
                 <Span TextColor="TextColor.Muted">Updated @statusInformation?.CurrentStatusHistoryData.FormatedUpdateTime ago</Span>
             }
+
+            <div style="height: 350px; width: 700px" class="d-none d-lg-block m-auto">
+                <br/>
+                <br/>
+                @if (statusInformation is not null)
+                {
+                    <StatusChart StatusInformation="statusInformation" />
+                }
+            </div>
         }
         else
         {

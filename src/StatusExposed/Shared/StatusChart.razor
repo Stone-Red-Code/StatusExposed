@@ -1,0 +1,111 @@
+﻿@using StatusExposed.Models
+
+<LineChart @ref="lineChart" TItem="double" Options="GetLineChartOptions()" />
+
+@code {
+    [Parameter, EditorRequired]
+    public StatusInformation? StatusInformation { get; set; }
+
+
+    LineChart<double> lineChart = null!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await HandleRedraw();
+        }
+    }
+
+    private async Task HandleRedraw()
+    {
+        await lineChart.Clear();
+
+        await lineChart.AddLabelsDatasetsAndUpdate(GetLineChartLabels(), GetLineChartDataset());
+    }
+
+    private LineChartDataset<double> GetLineChartDataset()
+    {
+        if (StatusInformation is null)
+        {
+            throw new ArgumentNullException(nameof(StatusInformation));
+        }
+
+        return new LineChartDataset<double>
+            {
+                Data = GetLineChartData(),
+                BackgroundColor = backgroundColors,
+                BorderColor = borderColors,
+                Fill = true,
+                PointRadius = 7,
+                CubicInterpolationMode = "monotone",
+                PointBackgroundColor = GetLineChartPointColors()
+            };
+    }
+
+    private List<string> GetLineChartLabels()
+    {
+        if (StatusInformation is null)
+        {
+            throw new ArgumentNullException(nameof(StatusInformation));
+        }
+
+        return StatusInformation.StatusHistory.OrderBy(s => s.LastUpdateTime).Select(s => s.LastUpdateTime.ToString()).ToList();
+    }
+
+    private List<double> GetLineChartData()
+    {
+        if (StatusInformation is null)
+        {
+            throw new ArgumentNullException(nameof(StatusInformation));
+        }
+
+        return StatusInformation.StatusHistory
+            .OrderBy(s => s.LastUpdateTime)
+            .Select(s => s.Ping == TimeSpan.MaxValue ? 0 : s.Ping.TotalMilliseconds)
+            .ToList();
+    }
+
+    private List<string> GetLineChartPointColors()
+    {
+        if (StatusInformation is null)
+        {
+            throw new ArgumentNullException(nameof(StatusInformation));
+        }
+
+        IEnumerable<ChartColor> chartColors = StatusInformation.StatusHistory
+            .OrderBy(s => s.LastUpdateTime)
+            .Select(s => s.Status == Status.Up ? ChartColor.FromRgba(0, 255, 0, 1f) : ChartColor.FromRgba(255, 0, 0, 1f));
+
+        List<string> pointColors = new List<string>();
+        foreach (ChartColor chartColor in chartColors)
+            pointColors.Add(chartColor);
+
+        return pointColors;
+    }
+
+    private LineChartOptions GetLineChartOptions()
+    {
+        return new LineChartOptions()
+            {
+                Responsive = true,
+                Plugins = new ChartPlugins()
+                {
+                    Legend = new ChartLegend()
+                    {
+                        Display = false
+                    }
+                },
+                Scales = new ChartScales()
+                {
+                    Y = new ChartAxis()
+                    {
+                        Min = 0,
+                    }
+                }
+            };
+    }
+
+    private List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f) };
+    private List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f) };
+}
