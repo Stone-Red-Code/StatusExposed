@@ -100,7 +100,7 @@
             return;
         }
 
-        if (Regex.IsMatch(domain, @"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]"))
+        if (Regex.IsMatch(domain, @"^(((?!\-))(xn\-\-)?[a-z0-9\-_]{0,61}[a-z0-9]{1,1}\.)*(xn\-\-)?([a-z0-9\-]{1,61}|[a-z0-9\-]{1,30})\.[a-z]{2,}$", RegexOptions.None, TimeSpan.FromSeconds(10)))
         {
             e.Status = ValidationStatus.Success;
             return;
@@ -119,7 +119,7 @@
             return;
         }
 
-        if (Regex.IsMatch(url, @"^http(s)?://([\w-]+.)+[\w-]+(/[\w- ./?%&=])?$") && url.Contains('.'))
+        if (Regex.IsMatch(url, @"^http(s)?://([\w-]+.)+[\w-]+(/[\w- ./?%&=])?$", RegexOptions.None, TimeSpan.FromSeconds(10)) && url.Contains('.'))
         {
             e.Status = ValidationStatus.Success;
             return;
