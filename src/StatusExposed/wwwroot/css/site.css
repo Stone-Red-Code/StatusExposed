@@ -122,6 +122,26 @@ a, .btn-link {
         transform: scale(0.9);
     }
 
+blockquote {
+    border-radius: 3px;
+    background-color: #3833338f;
+    border-left: 4px solid #ccc;
+    padding: .1em 10px;
+    quotes: "\201C""\201D""\2018""\2019";
+}
+
+pre > code {
+    color: #ff6384 !important;
+}
+
+hr {
+    border-top: 1px solid gray;
+}
+
+blockquote p {
+    display: inline;
+}
+
 ::-webkit-scrollbar {
     width: 4.5px;
 }
