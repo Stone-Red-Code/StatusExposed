@@ -31,7 +31,9 @@ public class StatusService : IStatusService
             await UpdateStatusAsync(domain);
         }
 
-        return await mainDatabaseContext.Services.FindAsync(domain);
+        return await mainDatabaseContext.Services
+            .Include(s => s.StatusHistory)
+            .FirstOrDefaultAsync(s => s.ServicePageDomain == domain);
     }
 
     ///<inheritdoc cref="IStatusService.AddServiceAsync(string, string?)"/>
