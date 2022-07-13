@@ -1,0 +1,10 @@
+﻿@page "/legal"
+
+@using BlazorMarkdown
+
+@inject IConfiguration Configuration
+
+@if(File.Exists(@Configuration["LegalNotePath"]))
+{
+    <Markdown FilePath="@Configuration["LegalNotePath"]"/>
+}
