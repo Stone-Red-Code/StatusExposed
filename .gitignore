@@ -398,3 +398,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/src/StatusExposed/MainDatabase.sqlite-shm
+/src/StatusExposed/MainDatabase.sqlite-wal
