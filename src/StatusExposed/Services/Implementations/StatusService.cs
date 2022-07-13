@@ -55,10 +55,7 @@ public class StatusService : IStatusService
             StatusPageUrl = statusPageUrl,
         };
 
-        _ = await mainDatabaseContext.Services.AddAsync(statusInformation);
-        _ = await mainDatabaseContext.SaveChangesAsync();
-
-        await UpdateStatusAsync(domain);
+        await UpdateStatusAsync(statusInformation, true);
     }
 
     ///<inheritdoc cref="IStatusService.GetStatuses(int, int)/>
@@ -81,31 +78,46 @@ public class StatusService : IStatusService
             .Include(s => s.StatusHistory)
             .FirstOrDefaultAsync(s => s.ServicePageDomain == domain);
 
+        await UpdateStatusAsync(statusInformation);
+    }
+
+    private async Task UpdateStatusAsync(StatusInformation? statusInformation, bool addNew = false)
+    {
         if (statusInformation is null || (DateTime.UtcNow - statusInformation.CurrentStatusHistoryData.LastUpdateTime < TimeSpan.FromMinutes(10)))
         {
             return;
         }
 
-        statusInformation.StatusHistory.Add(new StatusHistoryData() { LastUpdateTime = DateTime.MaxValue });
+        StatusHistoryData statusHistoryData = new StatusHistoryData()
+        {
+            LastUpdateTime = DateTime.MaxValue
+        };
 
         HttpClient client = new HttpClient
         {
             Timeout = TimeSpan.FromSeconds(30)
         };
 
-        await CheckUrl($"https://{domain}");
+        await CheckUrl($"https://{statusInformation.ServicePageDomain}");
 
-        if (statusInformation.CurrentStatusHistoryData.Status != Status.Up)
+        if (statusHistoryData.Status != Status.Up)
         {
-            await CheckUrl($"http://{domain}");
+            await CheckUrl($"http://{statusInformation.ServicePageDomain}");
         }
 
-        statusInformation.CurrentStatusHistoryData.LastUpdateTime = DateTime.UtcNow;
+        statusHistoryData.LastUpdateTime = DateTime.UtcNow;
+
+        statusInformation.StatusHistory.Add(statusHistoryData);
 
         // Limit history entries to 144 (10 min * 100 entries = 24h history)
         statusInformation.StatusHistory = statusInformation.StatusHistory
             .OrderByDescending(h => h.LastUpdateTime)
             .Take(144).ToList();
+
+        if (addNew)
+        {
+            mainDatabaseContext.Add(statusInformation);
+        }
 
         _ = await mainDatabaseContext.SaveChangesAsync();
 
@@ -122,23 +134,23 @@ public class StatusService : IStatusService
                 Stopwatch pingStopWatch = Stopwatch.StartNew();
                 HttpResponseMessage? response = await client.GetAsync(url);
                 pingStopWatch.Stop();
-                statusInformation.CurrentStatusHistoryData.Ping = TimeSpan.FromMilliseconds(pingStopWatch.ElapsedMilliseconds);
+                statusHistoryData.Ping = TimeSpan.FromMilliseconds(pingStopWatch.ElapsedMilliseconds);
 
                 if (response?.IsSuccessStatusCode == true)
                 {
-                    statusInformation.CurrentStatusHistoryData.Status = Status.Up;
+                    statusHistoryData.Status = Status.Up;
                 }
                 else
                 {
-                    statusInformation.CurrentStatusHistoryData.Status = Status.Down;
+                    statusHistoryData.Status = Status.Down;
                 }
             }
             catch (HttpRequestException)
             {
                 logger.LogDebug("HTTP request failed for {url}", url);
 
-                statusInformation.CurrentStatusHistoryData.Status = Status.Down;
-                statusInformation.CurrentStatusHistoryData.Ping = TimeSpan.MaxValue;
+                statusHistoryData.Status = Status.Down;
+                statusHistoryData.Ping = TimeSpan.MaxValue;
             }
         }
     }

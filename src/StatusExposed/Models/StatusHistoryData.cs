@@ -13,8 +13,8 @@ public class StatusHistoryData
 
     public DateTime LastUpdateTime { get; set; }
 
-    public Status Status { get; set; }
-    public TimeSpan Ping { get; set; }
+    public Status Status { get; set; } = Status.Unknown;
+    public TimeSpan Ping { get; set; } = TimeSpan.MaxValue;
 
     public string FormatedUpdateTime => (DateTime.UtcNow - LastUpdateTime).ToRelevantTimeUnitString();
     public string FormatedPingTime => Ping.ToRelevantTimeUnitString();
