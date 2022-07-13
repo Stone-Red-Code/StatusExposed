@@ -10,5 +10,5 @@ public class StatusInformation
     public string? StatusPageUrl { get; set; }
     public List<StatusHistoryData> StatusHistory { get; set; } = new List<StatusHistoryData>();
 
-    public StatusHistoryData CurrentStatusHistoryData => StatusHistory.OrderByDescending(s => s.LastUpdateTime).FirstOrDefault() ?? new StatusHistoryData();
+    public StatusHistoryData CurrentStatus => StatusHistory.OrderByDescending(s => s.LastUpdateTime).FirstOrDefault() ?? new StatusHistoryData();
 }

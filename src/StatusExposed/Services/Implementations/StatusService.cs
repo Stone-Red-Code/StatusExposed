@@ -85,7 +85,7 @@ public class StatusService : IStatusService
 
     private async Task UpdateStatusAsync(StatusInformation? statusInformation, bool addNew = false)
     {
-        if (statusInformation is null || (DateTime.UtcNow - statusInformation.CurrentStatusHistoryData.LastUpdateTime < TimeSpan.FromMinutes(10)))
+        if (statusInformation is null || (DateTime.UtcNow - statusInformation.CurrentStatus.LastUpdateTime < TimeSpan.FromMinutes(10)))
         {
             return;
         }

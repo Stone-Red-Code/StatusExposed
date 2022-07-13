@@ -39,7 +39,7 @@ namespace StatusExposed.Migrations
 
                     b.HasIndex("StatusInformationServicePageDomain");
 
-                    b.ToTable("StatusHistoryData");
+                    b.ToTable("StatusHistoryData", (string)null);
                 });
 
             modelBuilder.Entity("StatusExposed.Models.StatusInformation", b =>
@@ -57,7 +57,7 @@ namespace StatusExposed.Migrations
 
                     b.HasIndex("CurrentStatusHistoryDataId");
 
-                    b.ToTable("Services");
+                    b.ToTable("Services", (string)null);
                 });
 
             modelBuilder.Entity("StatusExposed.Models.StatusHistoryData", b =>
