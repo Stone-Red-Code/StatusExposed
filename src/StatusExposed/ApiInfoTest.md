@@ -11,9 +11,9 @@
 
 #### Success Response
 ---
-**Code** : `200 OK`
+**Code**: `200 OK`
 
-**Content example**
+**Content example**:
 
 ```json
 {
@@ -51,11 +51,11 @@
 #### Error Response
 ---
 
-**Condition** : If \{domain\} is not specified.
+**Condition**: If \{domain\} is not specified.
 
-**Code** : `400 BAD REQUEST`
+**Code**: `400 BAD REQUEST`
 
-**Content** : 
+**Content**: 
 ```
 <placeholder>
 ```
@@ -64,9 +64,9 @@
 
 **Condition** : If \{domain\} is currently not tracked
 
-**Code** : `404 NOT FOUND`
+**Code**: `404 NOT FOUND`
 
-**Content** : 
+**Content**: 
 ```
 github.com is not tracked
 ```
