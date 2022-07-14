@@ -5,6 +5,7 @@ using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 
 using StatusExposed.Database;
+using StatusExposed.Middleware;
 using StatusExposed.Services;
 using StatusExposed.Services.Implementations;
 
@@ -15,14 +16,14 @@ builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
-builder.Services.Configure<IpRateLimitOptions>(builder.Configuration.GetSection("IpRateLimiting"));
-builder.Services.Configure<IpRateLimitPolicies>(builder.Configuration.GetSection("IpRateLimitPolicies"));
+builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting"));
+builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
 builder.Services.AddSingleton<IScheduledUpdateService, ScheduledUpdateService>();
-builder.Services.AddScoped<DatabaseContext>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddBlazorise(options => { options.Immediate = true; });
 builder.Services.AddBootstrapProviders();
 builder.Services.AddFontAwesomeIcons();
@@ -37,7 +38,9 @@ if (!app.Environment.IsDevelopment())
     _ = app.UseHsts();
 }
 
-app.UseIpRateLimiting();
+app.UseApiAuthenticationMiddleware();
+
+app.UseClientRateLimiting();
 
 app.UseHttpsRedirection();
 
@@ -59,6 +62,15 @@ using (DatabaseContext? context = scope.ServiceProvider.GetService<DatabaseConte
     {
         logger?.LogInformation("Automatically created database because it didn't exist.");
     }
+}
+
+using (IServiceScope scope = app.Services.CreateScope())
+{
+    // get the ClientPolicyStore instance
+    IClientPolicyStore? clientPolicyStore = scope.ServiceProvider.GetRequiredService<IClientPolicyStore>();
+
+    // seed client data from appsettings
+    await clientPolicyStore.SeedAsync();
 }
 
 app.Run();
