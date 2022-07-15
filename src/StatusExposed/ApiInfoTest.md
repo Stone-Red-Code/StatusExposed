@@ -2,15 +2,15 @@
 
 ## Endpoints
 ---
-  
-  
-  
+ 
 ### GET /api/status/\{domain\}
 ---
-> Fetches the current and past status data from the specified domain.
+
+> Fetches the current and previous status data of the specified domain.
 
 #### Success Response
 ---
+
 **Code**: `200 OK`
 
 **Content example**:
@@ -62,7 +62,7 @@
 
 ---
 
-**Condition** : If \{domain\} is currently not tracked
+**Condition** : If \{domain\} is currently not tracked.
 
 **Code**: `404 NOT FOUND`
 
