@@ -1,6 +1,7 @@
 ﻿@page "/login/{*MailToken}"
 
 @using System.Text.RegularExpressions
+
 @using StatusExposed.Services
 
 @inject IAuthenticationService AuthenticationService
@@ -86,28 +87,6 @@
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
     {
         isValid = e.Status != ValidationStatus.Error;
-    }
-
-    private void ValidateEmail(ValidatorEventArgs e)
-    {
-        e.Status = ValidationStatus.Success;
-        return;
-
-        string? email = e.Value?.ToString();
-
-        if (string.IsNullOrEmpty(email))
-        {
-            e.Status = ValidationStatus.Error;
-            return;
-        }
-
-        if (Regex.IsMatch(email, @""))
-        {
-            e.Status = ValidationStatus.Success;
-            return;
-        }
-
-        e.Status = ValidationStatus.Error;
     }
 
     public async Task Enter(KeyboardEventArgs e)
