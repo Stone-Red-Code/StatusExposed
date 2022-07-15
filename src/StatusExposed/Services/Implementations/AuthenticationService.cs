@@ -17,14 +17,16 @@ public class AuthenticationService : IAuthenticationService
     private readonly NavigationManager navigationManager;
     private readonly IHttpContextAccessor localStorage;
     private readonly IJSRuntime jsRuntime;
+    private readonly IEmailService emailService;
 
-    public AuthenticationService(DatabaseContext mainDatabaseContext, ILogger<AuthenticationService> logger, NavigationManager navigationManager, IHttpContextAccessor localStorage, IJSRuntime jSRuntime)
+    public AuthenticationService(DatabaseContext mainDatabaseContext, ILogger<AuthenticationService> logger, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor, IJSRuntime jSRuntime, IEmailService emailService)
     {
         this.mainDatabaseContext = mainDatabaseContext;
         this.logger = logger;
         this.navigationManager = navigationManager;
-        this.localStorage = localStorage;
+        localStorage = httpContextAccessor;
         jsRuntime = jSRuntime;
+        this.emailService = emailService;
     }
 
     public async Task<User?> GetUserAsync()
@@ -57,8 +59,7 @@ public class AuthenticationService : IAuthenticationService
             IsVerified = false
         };
 
-        // send mail
-        logger.LogDebug("{email} | {mailToken}", email, navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}"));
+        SendVerificationEmail(email, mailToken);
 
         mainDatabaseContext.Users.Add(user);
         await mainDatabaseContext.SaveChangesAsync();
@@ -107,8 +108,7 @@ public class AuthenticationService : IAuthenticationService
         user.LastLoginDate = DateTime.UtcNow;
         user.SessionToken = mailToken;
 
-        // send mail
-        logger.LogDebug("{email} | {mailToken}", email, navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}"));
+        SendVerificationEmail(email, mailToken);
 
         await mainDatabaseContext.SaveChangesAsync();
     }
@@ -160,5 +160,13 @@ public class AuthenticationService : IAuthenticationService
     private string GenerateMailToken()
     {
         return "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
+    }
+
+    private void SendVerificationEmail(string email, string mailToken)
+    {
+        logger.LogDebug("{email} | {mailToken}", email, mailToken);
+
+        string verificationLink = navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}").ToString();
+        emailService.Send(email, "Account Verification", $"<a href={verificationLink}>verify</a>");
     }
 }

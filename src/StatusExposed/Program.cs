@@ -6,6 +6,7 @@ using Blazorise.Icons.FontAwesome;
 
 using StatusExposed.Database;
 using StatusExposed.Middleware;
+using StatusExposed.Models.Options;
 using StatusExposed.Services;
 using StatusExposed.Services.Implementations;
 
@@ -18,12 +19,14 @@ builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
 builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting"));
 builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
 builder.Services.AddSingleton<IScheduledUpdateService, ScheduledUpdateService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddBlazorise(options => { options.Immediate = true; });
 builder.Services.AddBootstrapProviders();
