@@ -18,12 +18,9 @@
 
     private User? user;
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            user = await AuthenticationService.GetUserAsync();
-        }
+        user = await AuthenticationService.GetUserAsync();
     }
 
 }

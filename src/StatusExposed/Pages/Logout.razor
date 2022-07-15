@@ -1,11 +1,9 @@
 ﻿@page "/logout"
 
 @using System.Text.RegularExpressions
-@using Blazored.LocalStorage
 @using StatusExposed.Services
 
 @inject IAuthenticationService AuthenticationService
-@inject ILocalStorageService LocalStorage
 
 @inject NavigationManager NavigationManager
 
@@ -14,6 +12,6 @@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await AuthenticationService.LogoutUserAsync();
-        NavigationManager.NavigateTo("/");
+        NavigationManager.NavigateTo("/", true);
     }
 }

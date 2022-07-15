@@ -1,11 +1,12 @@
-﻿using Blazored.LocalStorage;
-
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.JSInterop;
 
 using StatusExposed.Database;
 using StatusExposed.Models;
 using StatusExposed.Utilities;
+
+using System.Web;
 
 namespace StatusExposed.Services.Implementations;
 
@@ -14,19 +15,21 @@ public class AuthenticationService : IAuthenticationService
     private readonly DatabaseContext mainDatabaseContext;
     private readonly ILogger<AuthenticationService> logger;
     private readonly NavigationManager navigationManager;
-    private readonly ILocalStorageService localStorage;
+    private readonly IHttpContextAccessor localStorage;
+    private readonly IJSRuntime jsRuntime;
 
-    public AuthenticationService(DatabaseContext mainDatabaseContext, ILogger<AuthenticationService> logger, NavigationManager navigationManager, ILocalStorageService localStorage)
+    public AuthenticationService(DatabaseContext mainDatabaseContext, ILogger<AuthenticationService> logger, NavigationManager navigationManager, IHttpContextAccessor localStorage, IJSRuntime jSRuntime)
     {
         this.mainDatabaseContext = mainDatabaseContext;
         this.logger = logger;
         this.navigationManager = navigationManager;
         this.localStorage = localStorage;
+        jsRuntime = jSRuntime;
     }
 
     public async Task<User?> GetUserAsync()
     {
-        string token = await localStorage.GetItemAsStringAsync("token");
+        string? token = localStorage.HttpContext?.Request.Cookies["token"]?.ToString();
 
         if (string.IsNullOrWhiteSpace(token))
         {
@@ -45,7 +48,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task RegisterUserAsync(string email)
     {
-        string mailToken = "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
+        string mailToken = GenerateMailToken();
 
         User user = new User(email)
         {
@@ -55,7 +58,7 @@ public class AuthenticationService : IAuthenticationService
         };
 
         // send mail
-        logger.LogDebug("{email} | {mailToken}", email, navigationManager.ToAbsoluteUri($"/login/{mailToken}"));
+        logger.LogDebug("{email} | {mailToken}", email, navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}"));
 
         mainDatabaseContext.Users.Add(user);
         await mainDatabaseContext.SaveChangesAsync();
@@ -84,7 +87,7 @@ public class AuthenticationService : IAuthenticationService
 
             await mainDatabaseContext.SaveChangesAsync();
 
-            await localStorage.SetItemAsStringAsync("token", newToken);
+            await WriteCookieAsync("token", newToken, 7);
 
             return true;
         }
@@ -92,7 +95,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task LoginUserAsync(string email)
     {
-        string mailToken = "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
+        string mailToken = GenerateMailToken();
 
         User? user = await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
@@ -105,7 +108,7 @@ public class AuthenticationService : IAuthenticationService
         user.SessionToken = mailToken;
 
         // send mail
-        logger.LogDebug("{email} | {mailToken}", email, navigationManager.ToAbsoluteUri($"/login/{mailToken}"));
+        logger.LogDebug("{email} | {mailToken}", email, navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}"));
 
         await mainDatabaseContext.SaveChangesAsync();
     }
@@ -122,7 +125,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task LogoutUserAsync()
     {
-        string token = await localStorage.GetItemAsStringAsync("token");
+        string? token = localStorage.HttpContext?.Request.Cookies["token"]?.ToString();
 
         if (string.IsNullOrWhiteSpace(token))
         {
@@ -140,12 +143,22 @@ public class AuthenticationService : IAuthenticationService
 
         await mainDatabaseContext.SaveChangesAsync();
 
-        await localStorage.SetItemAsStringAsync("token", string.Empty);
+        await WriteCookieAsync("token", string.Empty, 0);
     }
 
     public async Task<bool> IsAuthenticated()
     {
-        string token = await localStorage.GetItemAsStringAsync("token");
+        string? token = localStorage.HttpContext?.Request.Cookies["token"]?.ToString();
         return await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.SessionToken == token) is not null;
+    }
+
+    private async Task WriteCookieAsync(string name, string value, int days)
+    {
+        _ = await jsRuntime.InvokeAsync<string>("blazorExtensions.WriteCookie", name, value, days);
+    }
+
+    private string GenerateMailToken()
+    {
+        return "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
     }
 }

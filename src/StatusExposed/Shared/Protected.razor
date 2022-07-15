@@ -1,18 +1,21 @@
-﻿@using Blazored.LocalStorage
-@using StatusExposed.Models
+﻿@using StatusExposed.Models
 @using StatusExposed.Services
 
-@inject ILocalStorageService LocalStorage
 @inject IAuthenticationService AuthenticationService
 
 @if (isAuthorized)
 {
     @Authorized
 }
-else
+else if(!loaded && UseLoadingScreen)
+{
+    @Loading
+}
+else if (loaded)
 {
     @NotAuthorized
 }
+
 
 
 @code {
@@ -23,22 +26,21 @@ else
     public RenderFragment? NotAuthorized { get; set; }
 
     [Parameter]
+    public RenderFragment? Loading { get; set; }
+
+    [Parameter]
     public Permission[]? RequiredPermissions { get; set; }
 
+    [Parameter]
+    public bool UseLoadingScreen { get; set; }
+
     private bool isAuthorized;
+    private bool loaded;
 
-    protected override async void OnAfterRender(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            LocalStorage.Changed += LocalStorageChanged;
-            await Check();
-        }
-    }
-
-    private async void LocalStorageChanged(object? sender, ChangedEventArgs e)
-    {
-       await this.InvokeAsync(Check);
+        await Check();
+        loaded = true;
     }
 
     private async Task Check()
@@ -48,7 +50,6 @@ else
         if (user is null)
         {
             isAuthorized = false;
-            await LocalStorage.RemoveItemAsync("token");
             StateHasChanged();
             return;
         }

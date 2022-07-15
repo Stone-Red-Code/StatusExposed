@@ -1,7 +1,5 @@
 using AspNetCoreRateLimit;
 
-using Blazored.LocalStorage;
-
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
@@ -30,8 +28,7 @@ builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddBlazorise(options => { options.Immediate = true; });
 builder.Services.AddBootstrapProviders();
 builder.Services.AddFontAwesomeIcons();
-builder.Services.AddBlazoredLocalStorage();
-builder.Services.AddBlazoredLocalStorage(config => config.JsonSerializerOptions.WriteIndented = true);
+builder.Services.AddHttpContextAccessor();
 
 WebApplication? app = builder.Build();
 
