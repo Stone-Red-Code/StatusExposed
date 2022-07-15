@@ -1,0 +1,75 @@
+﻿@using Blazored.LocalStorage
+@using StatusExposed.Models
+@using StatusExposed.Services
+
+@inject ILocalStorageService LocalStorage
+@inject IAuthenticationService AuthenticationService
+
+@if (isAuthorized)
+{
+    @Authorized
+}
+else
+{
+    @NotAuthorized
+}
+
+
+@code {
+    [Parameter]
+    public RenderFragment? Authorized { get; set; }
+
+    [Parameter]
+    public RenderFragment? NotAuthorized { get; set; }
+
+    [Parameter]
+    public Permission[]? RequiredPermissions { get; set; }
+
+    private bool isAuthorized;
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            LocalStorage.Changed += LocalStorageChanged;
+            await Check();
+        }
+    }
+
+    private async void LocalStorageChanged(object? sender, ChangedEventArgs e)
+    {
+       await this.InvokeAsync(Check);
+    }
+
+    private async Task Check()
+    {
+        User? user = await AuthenticationService.GetUserAsync();
+
+        if (user is null)
+        {
+            isAuthorized = false;
+            await LocalStorage.RemoveItemAsync("token");
+            StateHasChanged();
+            return;
+        }
+
+        if (RequiredPermissions is null || RequiredPermissions.Length == 0)
+        {
+            isAuthorized = true;
+            StateHasChanged();
+            return;
+        }
+
+        foreach (Permission permission in RequiredPermissions)
+        {
+            if (user.HasPermission(permission))
+            {
+                isAuthorized = false;
+                return;
+            }
+        }
+
+        StateHasChanged();
+        isAuthorized = true;
+    }
+}

@@ -1,5 +1,7 @@
 using AspNetCoreRateLimit;
 
+using Blazored.LocalStorage;
+
 using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
@@ -22,11 +24,14 @@ builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
 builder.Services.AddSingleton<IScheduledUpdateService, ScheduledUpdateService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
+builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddBlazorise(options => { options.Immediate = true; });
 builder.Services.AddBootstrapProviders();
 builder.Services.AddFontAwesomeIcons();
+builder.Services.AddBlazoredLocalStorage();
+builder.Services.AddBlazoredLocalStorage(config => config.JsonSerializerOptions.WriteIndented = true);
 
 WebApplication? app = builder.Build();
 

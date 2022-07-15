@@ -1,23 +1,27 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace StatusExposed.Models;
 
 public class User
 {
-    public User(string name, string email)
+    public User(string email)
     {
-        Name = name;
         Email = email;
     }
 
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     [Key]
     public int Id { get; set; }
 
-    public string Name { get; set; }
     public string Email { get; set; }
-    public List<string> Permissions { get; init; } = new List<string>();
+    public string? SessionToken { get; set; }
+    public bool IsVerified { get; set; }
+    public DateTime LastLoginDate { get; set; }
 
-    public bool HasPermission(string permission)
+    public List<Permission> Permissions { get; init; } = new List<Permission>();
+
+    public bool HasPermission(Permission permission)
     {
         return Permissions.Contains(permission);
     }

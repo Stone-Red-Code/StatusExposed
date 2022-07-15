@@ -1,0 +1,29 @@
+﻿@page "/account"
+@using StatusExposed.Models
+@using StatusExposed.Services
+
+@inject IAuthenticationService AuthenticationService
+
+<Protected>
+    <Authorized>
+        Hello, @user?.Email
+    </Authorized>
+    <NotAuthorized>
+        Sorry, you don't have the required permissions to see this.
+    </NotAuthorized>
+</Protected>
+
+@code {
+
+
+    private User? user;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            user = await AuthenticationService.GetUserAsync();
+        }
+    }
+
+}

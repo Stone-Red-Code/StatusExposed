@@ -25,7 +25,6 @@
 
 <div class="control-section centerArea">
     <div class="text-center">
-
         <Validations StatusChanged="ValidationStatusChanged">
             <Validation Validator="ValidateDomain">
                 <Field>
@@ -45,18 +44,10 @@
 </div>
 
 @code {
-    [Parameter]
-    public string? AutoFillDomain { get; set; }
-
     private bool isValid;
     private bool isLoading;
 
     private string? domainText;
-
-    protected override void OnParametersSet()
-    {
-        domainText = AutoFillDomain?.Replace('/', '.');
-    }
 
     private void Submit()
     {

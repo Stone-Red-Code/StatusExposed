@@ -1,0 +1,121 @@
+﻿@page "/login/{*MailToken}"
+
+@using System.Text.RegularExpressions
+@using Blazored.LocalStorage
+@using StatusExposed.Services
+
+@inject IAuthenticationService AuthenticationService
+
+@inject NavigationManager NavigationManager
+
+<div class="control-section centerArea">
+    <div class="text-center">
+        @if (string.IsNullOrWhiteSpace(MailToken))
+        {
+            <Validations StatusChanged="ValidationStatusChanged">
+                <Validation Validator="ValidateEmail">
+                    <Field>
+                        <FieldLabel>Your E-Mail</FieldLabel>
+                        <TextEdit Placeholder="example@example.com" @bind-Text="email" Disabled="isLoading" KeyDown="Enter" Autofocus="true">
+                            <Feedback>
+                                <ValidationNone>Enter your E-Mail.</ValidationNone>
+                                <ValidationSuccess>E-Mail is valid.</ValidationSuccess>
+                                <ValidationError>Enter a valid E-Mail!</ValidationError>
+                            </Feedback>
+                        </TextEdit>
+                    </Field>
+                </Validation>
+                <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Log In/Create Account</Button>
+            </Validations>
+        }
+        
+        @text
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string? MailToken { get; set; }
+
+    private bool isValid;
+    private bool isLoading;
+
+    private string? email;
+
+    private string? text;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!string.IsNullOrWhiteSpace(MailToken) && firstRender)
+        {
+            bool success = await AuthenticationService.VerifyUserAsync(MailToken);
+
+            if (!success)
+            {
+                text = "Login token is not valid!";
+                MailToken = null;
+                StateHasChanged();
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+    }
+
+    private async Task Submit()
+    {
+        if (email is null || !isValid)
+        {
+            return;
+        }
+
+        if (await AuthenticationService.UserExistsAsync(email))
+        {
+            await AuthenticationService.LoginUserAsync(email);
+            text = "login | sent email";
+        }
+        else
+        {
+            await AuthenticationService.RegisterUserAsync(email);
+            text = "register | sent email";
+        }
+
+        isLoading = true;
+    }
+
+    private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
+    {
+        isValid = e.Status != ValidationStatus.Error;
+    }
+
+    private void ValidateEmail(ValidatorEventArgs e)
+    {
+        e.Status = ValidationStatus.Success;
+        return;
+
+        string? email = e.Value?.ToString();
+
+        if (string.IsNullOrEmpty(email))
+        {
+            e.Status = ValidationStatus.Error;
+            return;
+        }
+
+        if (Regex.IsMatch(email, @""))
+        {
+            e.Status = ValidationStatus.Success;
+            return;
+        }
+
+        e.Status = ValidationStatus.Error;
+    }
+
+    public async Task Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await Submit();
+        }
+    }
+}

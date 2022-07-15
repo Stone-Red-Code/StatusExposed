@@ -7,6 +7,7 @@ namespace StatusExposed.Database;
 public class DatabaseContext : DbContext
 {
     public DbSet<StatusInformation> Services { get; set; } = null!;
+    public DbSet<User> Users { get; set; } = null!;
 
     public string DbPath { get; }
 
