@@ -66,6 +66,7 @@ else if (loaded)
             if (!user.Permissions.Contains(permission))
             {
                 isAuthorized = false;
+                StateHasChanged();
                 return;
             }
         }

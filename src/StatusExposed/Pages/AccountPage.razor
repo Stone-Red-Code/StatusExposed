@@ -6,7 +6,19 @@
 
 <Protected>
     <Authorized>
-        Hello, @user?.Email
+        @if (user is not null)
+        {
+            <h3>Hello, @user.Email</h3>
+
+            <p>Your permissions:</p>
+
+            <table>
+                @foreach (Permission permission in user.Permissions)
+                {
+                    <tr>@permission.Name</tr>
+                }
+            </table>
+        }
     </Authorized>
     <NotAuthorized>
         Sorry, you don't have the required permissions to see this.

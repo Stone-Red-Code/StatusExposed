@@ -34,8 +34,24 @@
                 </NavLink>
             </div>
         }
+
+        <Protected RequiredPermissions="role:admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin">
+                        <span class="oi oi-shield" aria-hidden="true"></span> Admin
+                    </NavLink>
+                </div>
+            </Authorized>
+        </Protected>
+
         <Protected>
             <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="account">
+                        <span class="oi oi-person" aria-hidden="true"></span> Account
+                    </NavLink>
+                </div>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="logout">
                         <span class="oi oi-lock-unlocked" aria-hidden="true"></span> Log Out
