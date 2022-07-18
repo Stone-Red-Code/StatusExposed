@@ -55,7 +55,7 @@
 
 **Code**: `400 BAD REQUEST`
 
-**Content**: 
+**Content example**: 
 ```
 <placeholder>
 ```
@@ -66,7 +66,7 @@
 
 **Code**: `404 NOT FOUND`
 
-**Content**: 
+**Content example**: 
 ```
 github.com is not tracked
 ```

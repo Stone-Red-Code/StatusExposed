@@ -33,7 +33,7 @@ public class AuthenticationService : IAuthenticationService
     {
         string? token = localStorage.HttpContext?.Request.Cookies["token"]?.ToString();
 
-        if (string.IsNullOrWhiteSpace(token))
+        if (!IsValidToken(token))
         {
             return null;
         }
@@ -127,7 +127,7 @@ public class AuthenticationService : IAuthenticationService
     {
         string? token = localStorage.HttpContext?.Request.Cookies["token"]?.ToString();
 
-        if (string.IsNullOrWhiteSpace(token))
+        if (!IsValidToken(token))
         {
             return;
         }
@@ -159,6 +159,16 @@ public class AuthenticationService : IAuthenticationService
     private string GenerateMailToken()
     {
         return "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
+    }
+
+    private bool IsValidToken(string? token)
+    {
+        if (string.IsNullOrWhiteSpace(token) || token.StartsWith("mail-"))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private void SendVerificationEmail(string email, string mailToken)
