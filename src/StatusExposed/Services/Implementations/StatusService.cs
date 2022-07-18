@@ -12,12 +12,14 @@ public class StatusService : IStatusService
     private readonly DatabaseContext mainDatabaseContext;
     public readonly ILogger<StatusService> logger;
     private readonly IConfiguration configuration;
+    private readonly IServiceScopeFactory serviceScopeFactory;
 
-    public StatusService(DatabaseContext mainDatabaseContext, ILogger<StatusService> logger, IConfiguration configuration)
+    public StatusService(DatabaseContext mainDatabaseContext, ILogger<StatusService> logger, IConfiguration configuration, IServiceScopeFactory serviceScopeFactory)
     {
         this.mainDatabaseContext = mainDatabaseContext;
         this.logger = logger;
         this.configuration = configuration;
+        this.serviceScopeFactory = serviceScopeFactory;
     }
 
     ///<inheritdoc cref="IStatusService.GetStatusAsync(string)(string, string?)"/>
@@ -78,6 +80,7 @@ public class StatusService : IStatusService
 
         StatusInformation? statusInformation = await mainDatabaseContext.Services
             .Include(s => s.StatusHistory)
+            .Include(s => s.Subscribers)
             .FirstOrDefaultAsync(s => s.ServicePageDomain == domain);
 
         await UpdateStatusAsync(statusInformation);
@@ -89,6 +92,8 @@ public class StatusService : IStatusService
         {
             return;
         }
+
+        Status oldStatus = statusInformation.CurrentStatus.Status;
 
         StatusHistoryData statusHistoryData = new StatusHistoryData()
         {
@@ -122,6 +127,33 @@ public class StatusService : IStatusService
         }
 
         _ = await mainDatabaseContext.SaveChangesAsync();
+
+        if (oldStatus != statusHistoryData.Status && !addNew)
+        {
+            logger.LogDebug("Status of {service} changed", statusInformation.ServicePageDomain);
+
+            // Fire and forget (but with logs) xD
+            _ = Task.Run(() =>
+            {
+                using IServiceScope scope = serviceScopeFactory.CreateScope();
+                IEmailService? emailService = scope.ServiceProvider.GetService<IEmailService>();
+
+                if (emailService is null)
+                {
+                    logger.LogError("{service} does not exist!", nameof(IEmailService));
+                    return;
+                }
+
+                logger.LogDebug("Sending emails to {count} accounts. ({service})", statusInformation.Subscribers.Count, statusInformation.ServicePageDomain);
+
+                if (statusInformation.Subscribers.Count > 0)
+                {
+                    emailService.Send(statusInformation.Subscribers.Select(s => s.Email), $"{statusInformation.ServicePageDomain} is {statusInformation.CurrentStatus.Status}", "This email has not body");
+                }
+
+                logger.LogDebug("Finished sending emails to {count} accounts. ({service})", statusInformation.Subscribers.Count, statusInformation.ServicePageDomain);
+            });
+        }
 
         // Check if URL is reachable.
         async Task CheckUrl(string url)

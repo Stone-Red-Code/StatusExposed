@@ -2,6 +2,7 @@
 
 @using System.Text.RegularExpressions
 @using StatusExposed.Services
+@using StatusExposed.Utilities
 
 @inject NavigationManager NavigationManger
 @inject IStatusService StatusService
@@ -26,10 +27,10 @@
 <div class="control-section centerArea">
     <div class="text-center">
         <Validations StatusChanged="ValidationStatusChanged">
-            <Validation Validator="ValidateDomain">
+            <Validation Validator="CustomValidators.ValidateDomain">
                 <Field>
                     <FieldLabel>Website domain</FieldLabel>
-                    <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter" Autofocus="true">
+                    <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
                         <Feedback>
                             <ValidationNone>Enter a domain.</ValidationNone>
                             <ValidationSuccess>Domain is valid.</ValidationSuccess>
@@ -38,7 +39,7 @@
                     </TextEdit>
                 </Field>
             </Validation>
-            <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Check</Button>
+            <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="isLoading">Check</Button>
         </Validations>
     </div>
 </div>
@@ -63,25 +64,6 @@
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
     {
         isValid = e.Status != ValidationStatus.Error;
-    }
-
-    private void ValidateDomain(ValidatorEventArgs e)
-    {
-        string? domain = e.Value?.ToString();
-
-        if (string.IsNullOrEmpty(domain))
-        {
-            e.Status = ValidationStatus.Error;
-            return;
-        }
-
-        if (Regex.IsMatch(domain, @"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]"))
-        {
-            e.Status = ValidationStatus.Success;
-            return;
-        }
-
-        e.Status = ValidationStatus.Error;
     }
 
     public void Enter(KeyboardEventArgs e)
