@@ -3,6 +3,7 @@
 @using StatusExposed.Services
 
 @inject IAuthenticationService AuthenticationService
+@inject IUserDataService UserDataService
 
 <Protected>
     <Authorized>
@@ -12,12 +13,25 @@
 
             <p>Your permissions:</p>
 
-            <table>
+            <ul>
                 @foreach (Permission permission in user.Permissions)
                 {
-                    <tr>@permission.Name</tr>
+                    <li>@permission.Name</li>
                 }
-            </table>
+            </ul>
+
+            @if (subscibedServices is not null)
+            {
+
+                <p>Subscribed Services:</p>
+
+                <ul>
+                    @foreach (StatusInformation statusInformation in subscibedServices)
+                    {
+                        <li>@statusInformation.ServicePageDomain</li>
+                    }
+                </ul>
+            }
         }
     </Authorized>
     <NotAuthorized>
@@ -29,10 +43,12 @@
 
 
     private User? user;
+    private IEnumerable<StatusInformation>? subscibedServices;
 
     protected override async Task OnInitializedAsync()
     {
         user = await AuthenticationService.GetUserAsync();
+        subscibedServices = await UserDataService.GetAllSubscribedServicesAsync();
     }
 
 }
