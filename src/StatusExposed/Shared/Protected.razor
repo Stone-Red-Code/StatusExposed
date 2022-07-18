@@ -29,7 +29,7 @@ else if (loaded)
     public RenderFragment? Loading { get; set; }
 
     [Parameter]
-    public Permission[]? RequiredPermissions { get; set; }
+    public string? RequiredPermissions { get; set; }
 
     [Parameter]
     public bool UseLoadingScreen { get; set; }
@@ -37,7 +37,7 @@ else if (loaded)
     private bool isAuthorized;
     private bool loaded;
 
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         await Check();
         loaded = true;
@@ -61,9 +61,9 @@ else if (loaded)
             return;
         }
 
-        foreach (Permission permission in RequiredPermissions)
+        foreach (Permission permission in RequiredPermissions.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            if (user.HasPermission(permission))
+            if (!user.Permissions.Contains(permission))
             {
                 isAuthorized = false;
                 return;

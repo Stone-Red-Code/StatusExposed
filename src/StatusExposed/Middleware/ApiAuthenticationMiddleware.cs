@@ -1,4 +1,7 @@
-﻿namespace StatusExposed.Middleware;
+﻿using StatusExposed.Models;
+using StatusExposed.Services;
+
+namespace StatusExposed.Middleware;
 
 public class ApiAuthenticationMiddleware
 {
@@ -9,11 +12,23 @@ public class ApiAuthenticationMiddleware
         this.next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context)
+    public async Task InvokeAsync(HttpContext context, IAuthenticationService authenticationService, ILogger<ApiAuthenticationMiddleware> logger)
     {
-        if (context.Request.Query.ContainsKey("test"))
+        if (context.Request.Headers.ContainsKey("X-ClientId"))
         {
-            context.Request.Headers.Add("X-ClientId", "test");
+            context.Response.Headers.Remove("X-ClientId");
+        }
+
+        if (await authenticationService.IsAuthenticated())
+        {
+            User user = (await authenticationService.GetUserAsync())!;
+
+            Permission? permission = user.Permissions.FirstOrDefault(p => p.Name.StartsWith("api"));
+
+            if (permission is not null)
+            {
+                context.Request.Headers.Add("X-ClientId", permission.Name);
+            }
         }
 
         await next(context);
@@ -22,7 +37,7 @@ public class ApiAuthenticationMiddleware
 
 public static class ApiAuthenticationMiddlewareExtensions
 {
-    public static IApplicationBuilder UseApiAuthenticationMiddleware(this IApplicationBuilder builder)
+    public static IApplicationBuilder UseApiAuthentication(this IApplicationBuilder builder)
     {
         return builder.UseMiddleware<ApiAuthenticationMiddleware>();
     }

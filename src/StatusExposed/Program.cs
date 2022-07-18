@@ -60,23 +60,19 @@ app.MapFallbackToPage("/_Host");
 
 app.Services.GetServices<IScheduledUpdateService>().First().Start(TimeSpan.FromMinutes(10));
 
-using (IServiceScope scope = app.Services.CreateScope())
-using (DatabaseContext? context = scope.ServiceProvider.GetService<DatabaseContext>())
+using IServiceScope scope = app.Services.CreateScope();
+using DatabaseContext? databaseCcontext = scope.ServiceProvider.GetService<DatabaseContext>();
+
+ILogger? logger = scope.ServiceProvider.GetService<ILogger>();
+if (databaseCcontext?.Database.EnsureCreated() == true)
 {
-    ILogger? logger = scope.ServiceProvider.GetService<ILogger>();
-    if (context?.Database.EnsureCreated() == true)
-    {
-        logger?.LogInformation("Automatically created database because it didn't exist.");
-    }
+    logger?.LogInformation("Automatically created database because it didn't exist.");
 }
 
-using (IServiceScope scope = app.Services.CreateScope())
-{
-    // get the ClientPolicyStore instance
-    IClientPolicyStore? clientPolicyStore = scope.ServiceProvider.GetRequiredService<IClientPolicyStore>();
+// get the ClientPolicyStore instance
+IClientPolicyStore? clientPolicyStore = scope.ServiceProvider.GetRequiredService<IClientPolicyStore>();
 
-    // seed client data from appsettings
-    await clientPolicyStore.SeedAsync();
-}
+// seed client data from appsettings
+await clientPolicyStore.SeedAsync();
 
 app.Run();

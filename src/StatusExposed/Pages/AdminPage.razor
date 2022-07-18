@@ -4,7 +4,16 @@
     <meta name="robots" content="noindex">
 </HeadContent>
 
-<h3>AdminPage</h3>
+
+
+<Protected RequiredPermissions="role:admin" UseLoadingScreen="true">
+    <Authorized>
+        <h3>AdminPage</h3>
+    </Authorized>
+    <NotAuthorized>
+        Sorry, you don't have the required permissions to see this.
+    </NotAuthorized>
+</Protected>
 
 @code {
 

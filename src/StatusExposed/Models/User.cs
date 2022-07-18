@@ -20,9 +20,4 @@ public class User
     public DateTime LastLoginDate { get; set; }
 
     public List<Permission> Permissions { get; init; } = new List<Permission>();
-
-    public bool HasPermission(Permission permission)
-    {
-        return Permissions.Contains(permission);
-    }
 }
