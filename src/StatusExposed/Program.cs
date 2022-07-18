@@ -9,6 +9,7 @@ using StatusExposed.Middleware;
 using StatusExposed.Models.Options;
 using StatusExposed.Services;
 using StatusExposed.Services.Implementations;
+using StatusExposed.Utilities;
 
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +26,7 @@ builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(
 builder.Services.AddSingleton<IScheduledUpdateService, ScheduledUpdateService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddBlazorise(options => { options.Immediate = true; });
@@ -43,7 +44,7 @@ if (!app.Environment.IsDevelopment())
     _ = app.UseHsts();
 }
 
-app.UseApiAuthenticationMiddleware();
+app.UseApiAuthentication();
 
 app.UseClientRateLimiting();
 
