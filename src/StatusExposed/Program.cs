@@ -71,7 +71,7 @@ if (databaseCcontext?.Database.EnsureCreated() == true)
 }
 
 // get the ClientPolicyStore instance
-IClientPolicyStore? clientPolicyStore = scope.ServiceProvider.GetRequiredService<IClientPolicyStore>();
+IClientPolicyStore clientPolicyStore = scope.ServiceProvider.GetRequiredService<IClientPolicyStore>();
 
 // seed client data from appsettings
 await clientPolicyStore.SeedAsync();

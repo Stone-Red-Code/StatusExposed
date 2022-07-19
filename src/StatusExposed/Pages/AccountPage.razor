@@ -1,6 +1,7 @@
 ﻿@page "/account"
 @using StatusExposed.Models
 @using StatusExposed.Services
+@using StatusExposed.Utilities
 
 @inject IAuthenticationService AuthenticationService
 @inject IUserDataService UserDataService
@@ -20,15 +21,33 @@
                 }
             </ul>
 
+            <Validations StatusChanged="ValidationStatusChanged">
+                <Validation Validator="CustomValidators.ValidateDomain">
+                    <Field>
+                        <FieldLabel>Website domain</FieldLabel>
+                        <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
+                            <Feedback>
+                                <ValidationNone>Enter a domain.</ValidationNone>
+                                <ValidationSuccess>Domain is valid.</ValidationSuccess>
+                                <ValidationError>Enter a valid domain!</ValidationError>
+                            </Feedback>
+                        </TextEdit>
+                    </Field>
+                </Validation>
+                <Button Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button>
+            </Validations>
+
             @if (subscibedServices is not null)
             {
-
                 <p>Subscribed Services:</p>
 
                 <ul>
                     @foreach (StatusInformation statusInformation in subscibedServices)
                     {
-                        <li>@statusInformation.ServicePageDomain</li>
+                        <li>
+                            <span>@statusInformation.ServicePageDomain</span>
+                            <Button Color="Color.Danger" Clicked="()=>Unsubscribe(statusInformation.ServicePageDomain)">Unsubscribe</Button>
+                        </li>
                     }
                 </ul>
             }
@@ -41,7 +60,6 @@
 
 @code {
 
-
     private User? user;
     private IEnumerable<StatusInformation>? subscibedServices;
 
@@ -51,4 +69,38 @@
         subscibedServices = await UserDataService.GetAllSubscribedServicesAsync();
     }
 
+    private bool isValid;
+    private bool isLoading;
+
+    private string? domainText;
+
+    private async Task Subscribe()
+    {
+        if (domainText is null || !isValid)
+        {
+            return;
+        }
+
+        isLoading = true;
+        await UserDataService.SubscribeToServiceAsync(domainText);
+        isLoading = false;
+    }
+
+    private async Task Unsubscribe(string domain)
+    {
+        await UserDataService.UnsubscribeFromServiceAsync(domain);
+    }
+
+    private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
+    {
+        isValid = e.Status != ValidationStatus.Error;
+    }
+
+    public async Task Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await Subscribe();
+        }
+    }
 }
