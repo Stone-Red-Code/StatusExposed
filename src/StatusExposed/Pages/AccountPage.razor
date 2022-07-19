@@ -15,10 +15,10 @@
             <Div Display="Display.Flex" Flex="Flex.Wrap.JustifyContent.Center">
 
                 <Div>
-                    <Row Margin="Margin.Is1.FromStart">
+                    <Row Margin="Margin.Is0.FromStart">
                         <Validations StatusChanged="ValidationStatusChanged">
                             <Validation @ref="validation" Validator="CustomValidators.ValidateDomain">
-                                <Field>
+                                <Field Margin="Margin.Is3.OnX.FromEnd">
                                     <FieldLabel>Subscribe to a service</FieldLabel>
                                     <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
                                         <Feedback>
@@ -30,12 +30,12 @@
                                 </Field>
                             </Validation>
                         </Validations>
-                        <Span Margin="Margin.IsAuto.OnY"><Button Margin="Margin.Is2.FromBottom.Is3.OnX.FromStart" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button></Span>
+                        <Span Margin="Margin.IsAuto.OnY"><Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button></Span>
                     </Row>
 
-                    @if (subscibedServices is not null)
+                    @if (subscibedServices is not null && subscibedServices.Count() > 0)
                     {
-                        <p>Subscribed Services</p>
+                        <p class="mt-4">Subscribed Services</p>
 
                         <div class="services-list-table">
                             <Table Border="Border.Dark">
