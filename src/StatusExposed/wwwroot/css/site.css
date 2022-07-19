@@ -91,7 +91,7 @@ a, .btn-link {
 }
 
 .green-status-circle {
-    background: lightgreen;
+    background-color: lightgreen;
     border-radius: 50%;
     height: 10px;
     width: 10px;
@@ -101,12 +101,22 @@ a, .btn-link {
 }
 
 .red-status-circle {
-    background: lightsalmon;
+    background-color: lightsalmon;
     border-radius: 50%;
     height: 10px;
     width: 10px;
     position: relative;
     box-shadow: 0 0 0 5px red;
+    margin: 7.5px 5px 10px 5px
+}
+
+.orange-status-circle {
+    background-color: gold;
+    border-radius: 50%;
+    height: 10px;
+    width: 10px;
+    position: relative;
+    box-shadow: 0 0 0 5px orangered;
     margin: 7.5px 5px 10px 5px
 }
 

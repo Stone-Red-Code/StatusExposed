@@ -8,14 +8,7 @@
 
 <Card WhiteText="true" TextAlignment="TextAlignment.Center" Margin="Margin.Is3" Class="status-card">
     <CardHeader>
-        @if (StatusInformation.CurrentStatus.Status == Status.Up)
-        {
-            <img class="green-status-circle" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="/>
-        }
-        else
-        {
-            <img class="red-status-circle" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="/>
-        }
+        <img class="@StatusColor-status-circle" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" />
 
         <span class="ml-1">@StatusInformation.ServicePageDomain</span>
     </CardHeader>
@@ -39,4 +32,17 @@
 @code {
     [Parameter, EditorRequired]
     public ServiceInformation StatusInformation { get; set; } = null!;
+
+    private string StatusColor
+    {
+        get
+        {
+            return StatusInformation?.CurrentStatus.Status switch
+            {
+                Status.Up => "green",
+                Status.Down => "red",
+                _ => "orange"
+            };
+        }
+    }
 }
