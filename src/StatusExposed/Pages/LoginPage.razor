@@ -61,6 +61,10 @@
                 NavigationManager.NavigateTo("/account", true);
             }
         }
+        else if (await AuthenticationService.IsAuthenticated())
+        {
+            NavigationManager.NavigateTo("/account", true);
+        }
     }
 
     private async Task Submit()
