@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 
 using StatusExposed.Database;
 using StatusExposed.Models;
+using StatusExposed.Models.Options;
 using StatusExposed.Utilities;
 
 using System.Web;
@@ -15,23 +17,25 @@ public class AuthenticationService : IAuthenticationService
     private readonly DatabaseContext mainDatabaseContext;
     private readonly ILogger<AuthenticationService> logger;
     private readonly NavigationManager navigationManager;
-    private readonly IHttpContextAccessor localStorage;
+    private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IJSRuntime jsRuntime;
     private readonly IEmailService emailService;
+    private readonly EmailOptions mailOptions;
 
-    public AuthenticationService(DatabaseContext mainDatabaseContext, ILogger<AuthenticationService> logger, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor, IJSRuntime jSRuntime, IEmailService emailService)
+    public AuthenticationService(DatabaseContext mainDatabaseContext, ILogger<AuthenticationService> logger, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor, IJSRuntime jsRuntime, IEmailService emailService, IOptions<EmailOptions> mailOptions)
     {
         this.mainDatabaseContext = mainDatabaseContext;
         this.logger = logger;
         this.navigationManager = navigationManager;
-        localStorage = httpContextAccessor;
-        jsRuntime = jSRuntime;
+        this.httpContextAccessor = httpContextAccessor;
+        this.jsRuntime = jsRuntime;
         this.emailService = emailService;
+        this.mailOptions = mailOptions.Value;
     }
 
     public async Task<User?> GetUserAsync()
     {
-        string? token = localStorage.HttpContext?.Request.Cookies["token"]?.ToString();
+        string? token = httpContextAccessor.HttpContext?.Request.Cookies["token"]?.ToString();
 
         if (!IsValidToken(token))
         {
@@ -125,7 +129,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task LogoutUserAsync()
     {
-        string? token = localStorage.HttpContext?.Request.Cookies["token"]?.ToString();
+        string? token = httpContextAccessor.HttpContext?.Request.Cookies["token"]?.ToString();
 
         if (!IsValidToken(token))
         {
@@ -156,12 +160,12 @@ public class AuthenticationService : IAuthenticationService
         _ = await jsRuntime.InvokeAsync<string>("blazorExtensions.WriteCookie", name, value, days);
     }
 
-    private string GenerateMailToken()
+    private static string GenerateMailToken()
     {
         return "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
     }
 
-    private bool IsValidToken(string? token)
+    private static bool IsValidToken(string? token)
     {
         if (string.IsNullOrWhiteSpace(token) || token.StartsWith("mail-"))
         {
@@ -173,9 +177,16 @@ public class AuthenticationService : IAuthenticationService
 
     private void SendVerificationEmail(string email, string mailToken)
     {
-        logger.LogDebug("{email} | {mailToken}", email, mailToken);
-
         string verificationLink = navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}").ToString();
-        emailService.Send(email, "Account Verification", $"<a href={verificationLink}>verify</a>");
+
+        if (File.Exists(mailOptions.TemplatePaths?.AccountVerification))
+        {
+            emailService.SendWithTemeplate(email, "Account Verification", mailOptions.TemplatePaths.AccountVerification, templateParameters: new TemplateParameter("verification-link", verificationLink));
+        }
+        else
+        {
+            logger.LogWarning("Account verification E-Mail template not found, using fall back template.");
+            emailService.Send(email, "Account Verification", $"<a href={verificationLink}>verify</a>");
+        }
     }
 }

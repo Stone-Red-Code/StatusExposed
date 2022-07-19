@@ -69,10 +69,12 @@
 
     private async Task Submit()
     {
-        if (email is null || !isValid)
+        if (email is null || !isValid ||isLoading)
         {
             return;
         }
+
+        isLoading = true;
 
         if (await AuthenticationService.UserExistsAsync(email))
         {
@@ -83,9 +85,7 @@
             await AuthenticationService.RegisterUserAsync(email);
         }
 
-        infoText = "We have sent you a verification E-Mail.";
-
-        isLoading = true;
+        infoText = "We have sent you a verification E-Mail.";  
     }
 
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)

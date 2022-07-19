@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using MimeKit;
 using MimeKit.Text;
 
+using StatusExposed.Models;
 using StatusExposed.Models.Options;
 
 namespace StatusExposed.Services.Implementations;
@@ -41,7 +42,7 @@ public class EmailService : IEmailService
         // create message
         MimeMessage email = new MimeMessage();
         email.From.Add(MailboxAddress.Parse(from ?? mailOptions.DefaultEmailAddress));
-        email.To.AddRange(to.Select(t => MailboxAddress.Parse(t)));
+        email.Bcc.AddRange(to.Select(t => MailboxAddress.Parse(t)));
         email.Subject = subject;
         email.Body = new TextPart(TextFormat.Html) { Text = html };
 
@@ -51,5 +52,28 @@ public class EmailService : IEmailService
         smtp.Authenticate(mailOptions.SmtpUser, mailOptions.SmtpPassword);
         smtp.Send(email);
         smtp.Disconnect(true);
+    }
+
+    public void SendWithTemeplate(string to, string subject, string templatePath, string? from = null, params TemplateParameter[] templateParameters)
+    {
+        string html = ProcessEmailTemplate(templatePath, templateParameters);
+        Send(to, subject, html, from);
+    }
+
+    public void SendWithTemeplate(IEnumerable<string> to, string subject, string templatePath, string? from = null, params TemplateParameter[] templateParameters)
+    {
+        string html = ProcessEmailTemplate(templatePath, templateParameters);
+        Send(to, subject, html, from);
+    }
+
+    private static string ProcessEmailTemplate(string templatePath, params TemplateParameter[] templateParameters)
+    {
+        string html = File.ReadAllText(templatePath);
+        foreach (TemplateParameter templateParameter in templateParameters)
+        {
+            html = html.Replace($"{{{templateParameter.Name}}}", templateParameter.Value);
+        }
+
+        return html;
     }
 }

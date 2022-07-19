@@ -99,7 +99,7 @@
 
     private async Task Subscribe()
     {
-        if (domainText is null || !isValid)
+        if (domainText is null || !isValid || isLoading)
         {
             return;
         }
