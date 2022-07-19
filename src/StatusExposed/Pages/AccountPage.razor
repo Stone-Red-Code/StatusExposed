@@ -10,47 +10,70 @@
     <Authorized>
         @if (user is not null)
         {
-            <h3>Hello, @user.Email</h3>
+            <h3 class="mb-5">Hello, @user.Email</h3>
 
-            <p>Your permissions:</p>
+            <Div Display="Display.Flex" Flex="Flex.Wrap.JustifyContent.Center">
 
-            <ul>
-                @foreach (Permission permission in user.Permissions)
-                {
-                    <li>@permission.Name</li>
-                }
-            </ul>
+                <Div>
+                    <Row Margin="Margin.Is1.FromStart">
+                        <Validations StatusChanged="ValidationStatusChanged">
+                            <Validation Validator="CustomValidators.ValidateDomain">
+                                <Field>
+                                    <FieldLabel>Subscribe to new service</FieldLabel>
+                                    <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
+                                        <Feedback>
+                                            <ValidationNone>Enter a domain.</ValidationNone>
+                                            <ValidationSuccess>Domain is valid.</ValidationSuccess>
+                                            <ValidationError>Enter a valid domain!</ValidationError>
+                                        </Feedback>
+                                    </TextEdit>
+                                </Field>
+                            </Validation>
+                        </Validations>
+                        <Span Margin="Margin.IsAuto.OnY"><Button Margin="Margin.Is2.FromBottom.Is3.OnX.FromStart" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button></Span>
+                    </Row>
 
-            <Validations StatusChanged="ValidationStatusChanged">
-                <Validation Validator="CustomValidators.ValidateDomain">
-                    <Field>
-                        <FieldLabel>Website domain</FieldLabel>
-                        <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
-                            <Feedback>
-                                <ValidationNone>Enter a domain.</ValidationNone>
-                                <ValidationSuccess>Domain is valid.</ValidationSuccess>
-                                <ValidationError>Enter a valid domain!</ValidationError>
-                            </Feedback>
-                        </TextEdit>
-                    </Field>
-                </Validation>
-                <Button Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button>
-            </Validations>
-
-            @if (subscibedServices is not null)
-            {
-                <p>Subscribed Services:</p>
-
-                <ul>
-                    @foreach (ServiceInformation statusInformation in subscibedServices)
+                    @if (subscibedServices is not null)
                     {
-                        <li>
-                            <span>@statusInformation.ServicePageDomain</span>
-                            <Button Color="Color.Danger" Clicked="()=>Unsubscribe(statusInformation.ServicePageDomain)">Unsubscribe</Button>
-                        </li>
+                        <p>Subscribed Services</p>
+
+                        <div class="services-list-table">
+                            <Table Border="Border.Dark">
+                                <TableBody>
+                                    @foreach (ServiceInformation statusInformation in subscibedServices)
+                                    {
+                                        <TableRow>
+                                            <TableRowCell Style="width:20px;">
+                                                <Button Color="Color.Danger" Clicked="()=>Unsubscribe(statusInformation.ServicePageDomain)">Unsubscribe</Button>
+                                            </TableRowCell>
+                                            <TableRowCell TextAlignment="TextAlignment.Start">
+                                                <Span><Strong TextColor="TextColor.White">@statusInformation.ServicePageDomain</Strong></Span>
+                                            </TableRowCell>
+                                        </TableRow>
+                                    }
+                                </TableBody>
+                            </Table>
+                        </div>
                     }
-                </ul>
-            }
+                </Div>
+
+                <Div Flex="Flex.Grow.Is1" Margin="Margin.Is4">
+                    <Card Class="default-background" Width="Width.Is100">
+                        <CardHeader>
+                            <p>Your permissions</p>
+                        </CardHeader>
+                        <CardBody>
+                            <ul>
+                                @foreach (Permission permission in user.Permissions)
+                                {
+                                    <li>@permission.Name</li>
+                                }
+                            </ul>
+                        </CardBody>
+                    </Card>
+                </Div>
+            </Div>
+
         }
     </Authorized>
     <NotAuthorized>

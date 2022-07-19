@@ -90,6 +90,10 @@ a, .btn-link {
     min-width: 30rem;
 }
 
+.default-background {
+    background-color: #062137;
+}
+
 .green-status-circle {
     background-color: lightgreen;
     border-radius: 50%;
@@ -152,6 +156,11 @@ blockquote p {
     display: inline;
 }
 
+.services-list-table {
+    width: 60vw;
+    overflow-x: scroll;
+}
+
 ::-webkit-scrollbar {
     width: 4.5px;
 }
@@ -174,5 +183,9 @@ blockquote p {
     .status-card {
         background-color: #062137;
         min-width: 100%;
+    }
+
+    .services-list-table {
+        width: 90vw;
     }
 }
