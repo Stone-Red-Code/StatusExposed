@@ -18,7 +18,7 @@ public class UserDataService : IUserDataService
         this.authenticationService = authenticationService;
     }
 
-    public async Task<bool> SubscribeToServiceAsync(string domain)
+    public async Task<(bool Success, string? ErrorMessage)> SubscribeToServiceAsync(string domain)
     {
         domain = domain.Trim().ToLower();
 
@@ -29,31 +29,29 @@ public class UserDataService : IUserDataService
 
         if (statusInformation is null)
         {
-            logger.LogError("Tried to subscribe to a non existing service ({service}).", domain);
-            return false;
+            return (false, $"Domain is not tracked!");
         }
 
         User? user = await authenticationService.GetUserAsync();
 
         if (user is null)
         {
-            logger.LogError("Anonymous can't subscribe to a service!");
-            return false;
+            return (false, "User is null, try to login!");
         }
 
         if (statusInformation.Subscribers.Any(s => s.Email == user.Email))
         {
-            return false;
+            return (false, "Already subscribed to service.");
         }
 
         statusInformation.Subscribers.Add(new Subscriber(user.Email));
 
         await mainDatabaseContext.SaveChangesAsync();
 
-        return true;
+        return (true, null);
     }
 
-    public async Task<bool> UnsubscribeFromServiceAsync(string domain)
+    public async Task<(bool Success, string? ErrorMessage)> UnsubscribeFromServiceAsync(string domain)
     {
         domain = domain.Trim().ToLower();
 
@@ -64,23 +62,21 @@ public class UserDataService : IUserDataService
 
         if (statusInformation is null)
         {
-            logger.LogError("Tried to unsubscribe from a non existing service ({service}).", domain);
-            return false;
+            return (false, $"Service is not tracked!");
         }
 
         User? user = await authenticationService.GetUserAsync();
 
         if (user is null)
         {
-            logger.LogError("Anonymous can't unsubscribe from a service!");
-            return false;
+            return (false, "User is null, try to login!");
         }
 
         statusInformation.Subscribers = statusInformation.Subscribers.Where(u => u.Email != user.Email).ToList();
 
         await mainDatabaseContext.SaveChangesAsync();
 
-        return true;
+        return (true, null);
     }
 
     public async Task<IEnumerable<ServiceInformation>?> GetAllSubscribedServicesAsync()

@@ -17,9 +17,9 @@
                 <Div>
                     <Row Margin="Margin.Is1.FromStart">
                         <Validations StatusChanged="ValidationStatusChanged">
-                            <Validation Validator="CustomValidators.ValidateDomain">
+                            <Validation @ref="validation" Validator="CustomValidators.ValidateDomain">
                                 <Field>
-                                    <FieldLabel>Subscribe to new service</FieldLabel>
+                                    <FieldLabel>Subscribe to a service</FieldLabel>
                                     <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
                                         <Feedback>
                                             <ValidationNone>Enter a domain.</ValidationNone>
@@ -82,20 +82,21 @@
 </Protected>
 
 @code {
+    private Validation validation = null!;
 
     private User? user;
     private IEnumerable<ServiceInformation>? subscibedServices;
+
+    private bool isValid;
+    private bool isLoading;
+
+    private string? domainText;
 
     protected override async Task OnInitializedAsync()
     {
         user = await AuthenticationService.GetUserAsync();
         subscibedServices = await UserDataService.GetAllSubscribedServicesAsync();
     }
-
-    private bool isValid;
-    private bool isLoading;
-
-    private string? domainText;
 
     private async Task Subscribe()
     {
@@ -105,7 +106,19 @@
         }
 
         isLoading = true;
-        await UserDataService.SubscribeToServiceAsync(domainText);
+
+        (bool IsSuccess, string? ErrorMessage) result = await UserDataService.SubscribeToServiceAsync(domainText);
+
+        if (result.IsSuccess)
+        {
+            validation.NotifyValidationStatusChanged(ValidationStatus.Success, new[] { $"Successfully subscribed to {domainText.Trim().ToLower()}" });
+            domainText = string.Empty;
+        }
+        else
+        {
+            validation.NotifyValidationStatusChanged(ValidationStatus.Error, new[] { result.ErrorMessage });
+        }
+
         isLoading = false;
     }
 
