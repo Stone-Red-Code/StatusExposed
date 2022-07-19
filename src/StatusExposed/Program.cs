@@ -11,6 +11,8 @@ using StatusExposed.Services;
 using StatusExposed.Services.Implementations;
 using StatusExposed.Utilities;
 
+using System.Text.Json.Serialization;
+
 WebApplicationBuilder? builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -34,6 +36,10 @@ builder.Services.AddBlazorise(options => { options.Immediate = true; });
 builder.Services.AddBootstrapProviders();
 builder.Services.AddFontAwesomeIcons();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 
 WebApplication? app = builder.Build();
 

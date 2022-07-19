@@ -23,7 +23,7 @@ public class StatusService : IStatusService
     }
 
     ///<inheritdoc cref="IStatusService.GetStatusAsync(string)(string, string?)"/>
-    public async Task<StatusInformation?> GetStatusAsync(string domain)
+    public async Task<ServiceInformation?> GetStatusAsync(string domain)
     {
         domain = domain.Trim().ToLower();
 
@@ -43,7 +43,7 @@ public class StatusService : IStatusService
     {
         domain = domain.Trim().ToLower();
 
-        StatusInformation? statusInformation = await mainDatabaseContext.Services.FindAsync(domain);
+        ServiceInformation? statusInformation = await mainDatabaseContext.Services.FindAsync(domain);
 
         if (statusInformation is not null)
         {
@@ -53,7 +53,7 @@ public class StatusService : IStatusService
             return;
         }
 
-        statusInformation = new StatusInformation()
+        statusInformation = new ServiceInformation()
         {
             ServicePageDomain = domain,
             StatusPageUrl = statusPageUrl,
@@ -63,7 +63,7 @@ public class StatusService : IStatusService
     }
 
     ///<inheritdoc cref="IStatusService.GetStatuses(int, int)"/>
-    public IEnumerable<StatusInformation> GetStatuses(int index, int count)
+    public IEnumerable<ServiceInformation> GetStatuses(int index, int count)
     {
         return mainDatabaseContext.Services.Include(s => s.StatusHistory)
             .AsSplitQuery()
@@ -78,7 +78,7 @@ public class StatusService : IStatusService
     {
         domain = domain.Trim().ToLower();
 
-        StatusInformation? statusInformation = await mainDatabaseContext.Services
+        ServiceInformation? statusInformation = await mainDatabaseContext.Services
             .Include(s => s.StatusHistory)
             .Include(s => s.Subscribers)
             .FirstOrDefaultAsync(s => s.ServicePageDomain == domain);
@@ -86,7 +86,7 @@ public class StatusService : IStatusService
         await UpdateStatusAsync(statusInformation);
     }
 
-    private async Task UpdateStatusAsync(StatusInformation? statusInformation, bool addNew = false)
+    private async Task UpdateStatusAsync(ServiceInformation? statusInformation, bool addNew = false)
     {
         if (statusInformation is null || (DateTime.UtcNow - statusInformation.CurrentStatus.LastUpdateTime < TimeSpan.FromMinutes(10)))
         {
@@ -95,7 +95,7 @@ public class StatusService : IStatusService
 
         Status oldStatus = statusInformation.CurrentStatus.Status;
 
-        StatusHistoryData statusHistoryData = new StatusHistoryData()
+        StatusData statusHistoryData = new StatusData()
         {
             LastUpdateTime = DateTime.MaxValue
         };
@@ -168,7 +168,7 @@ public class StatusService : IStatusService
                 Stopwatch pingStopWatch = Stopwatch.StartNew();
                 HttpResponseMessage? response = await client.GetAsync(url);
                 pingStopWatch.Stop();
-                statusHistoryData.Ping = TimeSpan.FromMilliseconds(pingStopWatch.ElapsedMilliseconds);
+                statusHistoryData.ResponseTime = TimeSpan.FromMilliseconds(pingStopWatch.ElapsedMilliseconds);
 
                 if (response?.IsSuccessStatusCode == true)
                 {
@@ -184,7 +184,7 @@ public class StatusService : IStatusService
                 logger.LogDebug("HTTP request failed for {url}", url);
 
                 statusHistoryData.Status = Status.Down;
-                statusHistoryData.Ping = TimeSpan.MaxValue;
+                statusHistoryData.ResponseTime = TimeSpan.MaxValue;
             }
         }
     }

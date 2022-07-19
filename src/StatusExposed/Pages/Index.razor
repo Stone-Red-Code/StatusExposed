@@ -24,7 +24,7 @@
 
 <Div Flex="Flex.JustifyContent.Around.Wrap">
     <!--TODO: Implement infinite scrolling instead of requesting only 100 services-->
-    @foreach (StatusInformation statusInformation in StatusService.GetStatuses(0, 100))
+    @foreach (ServiceInformation statusInformation in StatusService.GetStatuses(0, 100))
     {
         <StatusCard StatusInformation="statusInformation" />
     }

@@ -48,7 +48,7 @@ public class ScheduledUpdateService : IScheduledUpdateService
             return;
         }
 
-        IEnumerable<StatusInformation> statusInformations;
+        IEnumerable<ServiceInformation> statusInformations;
         int count = 0;
 
         do

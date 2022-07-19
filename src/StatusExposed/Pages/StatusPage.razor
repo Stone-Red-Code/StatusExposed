@@ -45,13 +45,13 @@
             <br />
             <Span TextColor="TextColor.Muted" Display="Display.InlineFlex" VerticalAlignment="VerticalAlignment.Middle">
                 Response time:
-                @if (statusInformation?.CurrentStatus.Ping == TimeSpan.MaxValue || statusInformation is null)
+                @if (statusInformation?.CurrentStatus.ResponseTime == TimeSpan.MaxValue || statusInformation is null)
                 {
                     <span class="oi oi-infinity mt-1 ml-1" aria-hidden="true" />
                 }
                 else
                 {
-                    <span class="ml-1">@statusInformation?.CurrentStatus.FormatedPingTime</span>
+                    <span class="ml-1">@statusInformation?.CurrentStatus.FormatedResponseTimeTime</span>
                 }
             </Span>
             <br />
@@ -107,8 +107,8 @@ else
 
     private string? EscapedServicePageDomain => ServicePageDomain?.Replace('.', '/');
     private string PlainStatusString => $"{ServicePageDomain} is currently {(statusInformation?.CurrentStatus.Status ?? Status.Unknown)}";
-    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.CurrentStatus.FormatedPingTime)} | "
-                                    + $"{(statusInformation is null || statusInformation?.CurrentStatus.Ping == TimeSpan.MaxValue ? "Updating..." : ($"Updated {statusInformation?.CurrentStatus.FormatedUpdateTime} ago"))}";
+    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.CurrentStatus.FormatedResponseTimeTime)} | "
+                                    + $"{(statusInformation is null || statusInformation?.CurrentStatus.ResponseTime == TimeSpan.MaxValue ? "Updating..." : ($"Updated {statusInformation?.CurrentStatus.FormatedUpdateTime} ago"))}";
 
     private string ThemeColor
     {
@@ -123,7 +123,7 @@ else
         }
     }
 
-    private StatusInformation? statusInformation = null;
+    private ServiceInformation? statusInformation = null;
 
     private bool doesExist = true;
 
@@ -140,7 +140,7 @@ else
 
         ServicePageDomain = ServicePageDomain.Replace('/', '.');
 
-        StatusInformation? statusInformation = await StatusService.GetStatusAsync(ServicePageDomain);
+        ServiceInformation? statusInformation = await StatusService.GetStatusAsync(ServicePageDomain);
 
         if (statusInformation is null)
         {

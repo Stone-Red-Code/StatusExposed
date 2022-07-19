@@ -21,7 +21,7 @@ public class StatusController : Controller
     {
         domain = domain.Replace('/', '.');
 
-        StatusInformation? statusInformation = await statusService.GetStatusAsync(domain);
+        ServiceInformation? statusInformation = await statusService.GetStatusAsync(domain);
 
         if (statusInformation is null)
         {

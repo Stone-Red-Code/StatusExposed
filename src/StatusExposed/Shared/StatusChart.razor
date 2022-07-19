@@ -4,7 +4,7 @@
 
 @code {
     [Parameter, EditorRequired]
-    public StatusInformation? StatusInformation { get; set; }
+    public ServiceInformation? StatusInformation { get; set; }
 
 
     LineChart<double> lineChart = null!;
@@ -62,7 +62,7 @@
 
         return StatusInformation.StatusHistory
             .OrderBy(s => s.LastUpdateTime)
-            .Select(s => s.Ping == TimeSpan.MaxValue ? 0 : s.Ping.TotalMilliseconds)
+            .Select(s => s.ResponseTime == TimeSpan.MaxValue ? 0 : s.ResponseTime.TotalMilliseconds)
             .ToList();
     }
 

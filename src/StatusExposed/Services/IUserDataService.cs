@@ -8,5 +8,5 @@ public interface IUserDataService
 
     Task<bool> UnsubscribeFromServiceAsync(string domain);
 
-    Task<IEnumerable<StatusInformation>?> GetAllSubscribedServicesAsync();
+    Task<IEnumerable<ServiceInformation>?> GetAllSubscribedServicesAsync();
 }

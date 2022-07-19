@@ -22,28 +22,28 @@
    "statusHistory":[
       {
          "id":146,
+         "status":"Up",
          "lastUpdateTime":"2022-07-13T14:03:25.4906558Z",
-         "status":0,
-         "ping":"00:00:00.7280000",
+         "responseTime":"00:00:00.7280000",
          "formatedUpdateTime":"332 milliseconds",
-         "formatedPingTime":"728 milliseconds"
+         "formatedResponseTimeTime":"728 milliseconds"
       },
       {
          "id":145,
+         "status":"Up",
          "lastUpdateTime":"2022-07-13T13:42:04.3931873",
-         "status":0,
-         "ping":"00:00:00.5990000",
+         "responseTime":"00:00:00.5990000",
          "formatedUpdateTime":"21 minutes",
-         "formatedPingTime":"599 milliseconds"
+         "formatedResponseTimeTime":"599 milliseconds"
       }
    ],
    "currentStatus":{
       "id":146,
+      "status":"Up",
       "lastUpdateTime":"2022-07-13T14:03:25.4906558Z",
-      "status":0,
-      "ping":"00:00:00.7280000",
+      "responseTime":"00:00:00.7280000",
       "formatedUpdateTime":"332 milliseconds",
-      "formatedPingTime":"728 milliseconds"
+      "formatedResponseTimeTime":"728 milliseconds"
    }
 }
 ```

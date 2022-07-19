@@ -42,7 +42,7 @@
                 <p>Subscribed Services:</p>
 
                 <ul>
-                    @foreach (StatusInformation statusInformation in subscibedServices)
+                    @foreach (ServiceInformation statusInformation in subscibedServices)
                     {
                         <li>
                             <span>@statusInformation.ServicePageDomain</span>
@@ -61,7 +61,7 @@
 @code {
 
     private User? user;
-    private IEnumerable<StatusInformation>? subscibedServices;
+    private IEnumerable<ServiceInformation>? subscibedServices;
 
     protected override async Task OnInitializedAsync()
     {

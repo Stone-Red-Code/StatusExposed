@@ -22,7 +22,7 @@ public class UserDataService : IUserDataService
     {
         domain = domain.Trim().ToLower();
 
-        StatusInformation? statusInformation = await mainDatabaseContext.Services
+        ServiceInformation? statusInformation = await mainDatabaseContext.Services
                                                         .Include(s => s.Subscribers)
                                                         .Where(s => s.ServicePageDomain == domain)
                                                         .FirstOrDefaultAsync();
@@ -57,7 +57,7 @@ public class UserDataService : IUserDataService
     {
         domain = domain.Trim().ToLower();
 
-        StatusInformation? statusInformation = await mainDatabaseContext.Services
+        ServiceInformation? statusInformation = await mainDatabaseContext.Services
                                                         .Include(s => s.Subscribers)
                                                         .Where(s => s.ServicePageDomain == domain)
                                                         .FirstOrDefaultAsync();
@@ -83,7 +83,7 @@ public class UserDataService : IUserDataService
         return true;
     }
 
-    public async Task<IEnumerable<StatusInformation>?> GetAllSubscribedServicesAsync()
+    public async Task<IEnumerable<ServiceInformation>?> GetAllSubscribedServicesAsync()
     {
         User? user = await authenticationService.GetUserAsync();
 

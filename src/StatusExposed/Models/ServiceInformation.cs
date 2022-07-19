@@ -2,14 +2,14 @@
 
 namespace StatusExposed.Models;
 
-public class StatusInformation
+public class ServiceInformation
 {
     [Key]
     public string ServicePageDomain { get; init; } = string.Empty;
 
     public string? StatusPageUrl { get; set; }
-    public List<StatusHistoryData> StatusHistory { get; set; } = new List<StatusHistoryData>();
+    public List<StatusData> StatusHistory { get; set; } = new List<StatusData>();
     public List<Subscriber> Subscribers { get; set; } = new List<Subscriber>();
 
-    public StatusHistoryData CurrentStatus => StatusHistory.OrderByDescending(s => s.LastUpdateTime).FirstOrDefault() ?? new StatusHistoryData();
+    public StatusData CurrentStatus => StatusHistory.OrderByDescending(s => s.LastUpdateTime).FirstOrDefault() ?? new StatusData();
 }
