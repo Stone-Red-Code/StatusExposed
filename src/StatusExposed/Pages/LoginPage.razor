@@ -15,12 +15,12 @@
             <Validations StatusChanged="ValidationStatusChanged">
                 <Validation Validator="ValidationRule.IsEmail">
                     <Field>
-                        <FieldLabel>Your E-Mail</FieldLabel>
+                        <FieldLabel>Your E-mail</FieldLabel>
                         <TextEdit Placeholder="example@example.com" @bind-Text="email" Disabled="isLoading" KeyDown="Enter" Autofocus="true">
                             <Feedback>
-                                <ValidationNone>Enter your E-Mail.</ValidationNone>
-                                <ValidationSuccess>E-Mail is valid.</ValidationSuccess>
-                                <ValidationError>Enter a valid E-Mail!</ValidationError>
+                                <ValidationNone>Enter your E-mail.</ValidationNone>
+                                <ValidationSuccess>E-mail is valid.</ValidationSuccess>
+                                <ValidationError>Enter a valid E-mail!</ValidationError>
                             </Feedback>
                         </TextEdit>
                     </Field>
@@ -75,7 +75,7 @@
         }
 
         isLoading = true;
-        infoText = "We have sent you a verification E-Mail.";
+        infoText = "We have sent you a verification E-mail.";
         StateHasChanged();
 
         if (await AuthenticationService.UserExistsAsync(email))

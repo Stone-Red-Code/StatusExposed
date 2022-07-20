@@ -187,7 +187,7 @@ public class AuthenticationService : IAuthenticationService
         }
         else
         {
-            logger.LogWarning("Account verification E-Mail template not found, using fall back template.");
+            logger.LogWarning("Account verification E-mail template not found, using fall back template.");
             await emailService.SendAsync(email, "Account Verification", $"Verify your account: <a href={verificationLink}>verify</a>");
         }
     }
