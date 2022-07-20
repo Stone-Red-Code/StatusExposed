@@ -5,26 +5,9 @@
 
 @inject IStatusService StatusService
 
-<HeadContent>
-    <meta name="description" content="A website to track the status of other websites">
-
-    <!-- Facebook Meta Tags -->
-    <meta property="og:url" content="https://status.exposed/add">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="StatusExposed">
-    <meta property="og:description" content="A website to track the status of other websites">
-
-    <!-- Twitter Meta Tags -->
-    <meta name="twitter:card" content="summary">
-    <meta property="twitter:domain" content="status.exposed">
-    <meta property="twitter:url" content="https://status.exposed/add">
-    <meta name="twitter:title" content="StatusExposed">
-    <meta name="twitter:description" content="A website to track the status of other websites">
-</HeadContent>
-
 <Div Flex="Flex.JustifyContent.Around.Wrap">
     <!--TODO: Implement infinite scrolling instead of requesting only 100 services-->
-    @foreach (StatusInformation statusInformation in StatusService.GetStatuses(0, 100))
+    @foreach (ServiceInformation statusInformation in StatusService.GetStatuses(0, 100))
     {
         <StatusCard StatusInformation="statusInformation" />
     }

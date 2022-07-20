@@ -8,19 +8,11 @@
 
 <Card WhiteText="true" TextAlignment="TextAlignment.Center" Margin="Margin.Is3" Class="status-card">
     <CardHeader>
-        @if (StatusInformation.CurrentStatusHistoryData.Status == Status.Up)
-        {
-            <img class="green-status-circle" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="/>
-        }
-        else
-        {
-            <img class="red-status-circle" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="/>
-        }
-
+        <StatusCircle Status="StatusInformation.CurrentStatus.Status"/>
         <span class="ml-1">@StatusInformation.ServicePageDomain</span>
     </CardHeader>
     <CardBody>
-        <CardTitle><strong>@StatusInformation.ServicePageDomain</strong> is currently <strong>@StatusInformation.CurrentStatusHistoryData.Status</strong></CardTitle>
+        <CardTitle><strong>@StatusInformation.ServicePageDomain</strong> is currently <strong>@StatusInformation.CurrentStatus.Status</strong></CardTitle>
         <CardText>
             <a href="status/@StatusInformation.ServicePageDomain.Replace('.', '/')" class="mx-2"><span class="oi oi-link-intact" aria-hidden="true"></span></a>
 
@@ -31,12 +23,12 @@
         </CardText>
     </CardBody>
     <Div Class="card-footer text-muted">
-        Updated @StatusInformation.CurrentStatusHistoryData.FormatedUpdateTime ago
+        Updated @StatusInformation.CurrentStatus.FormatedUpdateTime ago
     </Div>
 </Card>
 
 
 @code {
     [Parameter, EditorRequired]
-    public StatusInformation StatusInformation { get; set; } = null!;
+    public ServiceInformation StatusInformation { get; set; } = null!;
 }

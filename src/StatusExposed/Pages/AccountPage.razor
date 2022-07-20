@@ -1,0 +1,157 @@
+﻿@page "/account"
+@using StatusExposed.Models
+@using StatusExposed.Services
+@using StatusExposed.Utilities
+
+@inject IAuthenticationService AuthenticationService
+@inject IUserDataService UserDataService
+
+<Protected>
+    <Authorized>
+        @if (user is not null)
+        {
+            <h3 class="mb-5 text-break">Hello, @user.Email</h3>
+
+            <Div Display="Display.Flex" Flex="Flex.Wrap.JustifyContent.Center">
+
+                <Div>
+                    <Row Margin="Margin.Is0.FromStart">
+                        <Validations StatusChanged="ValidationStatusChanged">
+                            <Validation @ref="validation" Validator="CustomValidators.ValidateDomain">
+                                <Field Margin="Margin.Is3.OnX.FromEnd">
+                                    <FieldLabel>Subscribe to a site</FieldLabel>
+                                    <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
+                                        <Feedback>
+                                            <ValidationNone>Enter a domain.</ValidationNone>
+                                            <ValidationSuccess>Domain is valid.</ValidationSuccess>
+                                            <ValidationError>Enter a valid domain!</ValidationError>
+                                        </Feedback>
+                                    </TextEdit>
+                                </Field>
+                            </Validation>
+                        </Validations>
+                        <Span Margin="Margin.IsAuto.OnY"><Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button></Span>
+                    </Row>
+
+                    @if (subscibedServices is not null)
+                    {
+                        <p class="mt-4">Subscribed sites</p>
+
+                        if (subscibedServices.Count() == 0)
+                        {
+                            <Paragraph TextColor="TextColor.White50">
+                                You are not subscribed to any sites yet.<br>
+                                Use the form above to subscribe to a website and receive notifications when the status of a website changes.
+                            </Paragraph>
+                        }
+
+                        <div class="services-list-table">
+                            <Table Border="Border.Dark">
+                                <TableBody>
+                                    @foreach (ServiceInformation serviceInformation in subscibedServices)
+                                    {
+                                        <TableRow>
+                                            <TableRowCell Style="width:20px;">
+                                                <Button Color="Color.Danger" Clicked="()=>Unsubscribe(serviceInformation.ServicePageDomain)">Unsubscribe</Button>
+                                            </TableRowCell>
+                                            <TableRowCell Style="width:5px;">
+                                                <StatusCircle Status="serviceInformation.CurrentStatus.Status" />
+                                            </TableRowCell>
+                                            <TableRowCell TextAlignment="TextAlignment.Start">
+                                                <Span>
+                                                    <a href="/status/@serviceInformation.ServicePageDomain.Replace('.', '/')">
+                                                        <Strong TextColor="TextColor.White">@serviceInformation.ServicePageDomain</Strong>
+                                                    </a>
+                                                </Span>
+                                            </TableRowCell>
+                                        </TableRow>
+                                    }
+                                </TableBody>
+                            </Table>
+                        </div>
+                    }
+                </Div>
+
+                <Div Flex="Flex.Grow.Is1" Margin="Margin.Is4">
+                    <Card Class="default-background" Width="Width.Is100">
+                        <CardHeader>
+                            <p>Your permissions</p>
+                        </CardHeader>
+                        <CardBody>
+                            <ul>
+                                @foreach (Permission permission in user.Permissions)
+                                {
+                                    <li>@permission.Name</li>
+                                }
+                            </ul>
+                        </CardBody>
+                    </Card>
+                </Div>
+            </Div>
+
+        }
+    </Authorized>
+    <NotAuthorized>
+        Sorry, you don't have the required permissions to see this.
+    </NotAuthorized>
+</Protected>
+
+@code {
+    private Validation validation = null!;
+
+    private User? user;
+    private IEnumerable<ServiceInformation>? subscibedServices;
+
+    private bool isValid;
+    private bool isLoading;
+
+    private string? domainText;
+
+    protected override async Task OnInitializedAsync()
+    {
+        user = await AuthenticationService.GetUserAsync();
+        subscibedServices = (await UserDataService.GetAllSubscribedServicesAsync())?.OrderByDescending(s=>s.CurrentStatus.Status);
+    }
+
+    private async Task Subscribe()
+    {
+        if (domainText is null || !isValid || isLoading)
+        {
+            return;
+        }
+
+        isLoading = true;
+
+        (bool IsSuccess, string? ErrorMessage) result = await UserDataService.SubscribeToServiceAsync(domainText);
+
+        if (result.IsSuccess)
+        {
+            validation.NotifyValidationStatusChanged(ValidationStatus.Success, new[] { $"Successfully subscribed to {domainText.Trim().ToLower()}" });
+            domainText = string.Empty;
+        }
+        else
+        {
+            validation.NotifyValidationStatusChanged(ValidationStatus.Error, new[] { result.ErrorMessage });
+        }
+
+        isLoading = false;
+    }
+
+    private async Task Unsubscribe(string domain)
+    {
+        await UserDataService.UnsubscribeFromServiceAsync(domain);
+    }
+
+    private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
+    {
+        isValid = e.Status != ValidationStatus.Error;
+    }
+
+    public async Task Enter(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await Subscribe();
+        }
+    }
+}

@@ -8,8 +8,8 @@ public interface IStatusService
     /// Gets the current status of a service.
     /// </summary>
     /// <param name="domain">Domain of the service.</param>
-    /// <returns><see cref="StatusInformation"/> for the requested service.</returns>
-    Task<StatusInformation?> GetStatusAsync(string domain);
+    /// <returns><see cref="ServiceInformation"/> for the requested service or <see langword="null"/> if not found.</returns>
+    Task<ServiceInformation?> GetStatusAsync(string domain);
 
     /// <summary>
     /// Adds a new service.
@@ -24,8 +24,8 @@ public interface IStatusService
     /// </summary>
     /// <param name="index">Start index of services.</param>
     /// <param name="count">The max amount of services to return.</param>
-    /// <returns>The <see cref="StatusInformation"/>s of all services.</returns>
-    IEnumerable<StatusInformation> GetStatuses(int index, int count);
+    /// <returns>The <see cref="ServiceInformation"/>s of all services.</returns>
+    IEnumerable<ServiceInformation> GetStatuses(int index, int count);
 
     /// <summary>
     /// Updates the status of the specified domain.

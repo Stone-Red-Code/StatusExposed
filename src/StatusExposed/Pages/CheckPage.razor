@@ -2,6 +2,7 @@
 
 @using System.Text.RegularExpressions
 @using StatusExposed.Services
+@using StatusExposed.Utilities
 
 @inject NavigationManager NavigationManger
 @inject IStatusService StatusService
@@ -10,7 +11,7 @@
     <meta name="description" content="Check the status of a site">
 
     <!-- Facebook Meta Tags -->
-    <meta property="og:url" content="https://status.exposed/add">
+    <meta property="og:url" content="https://status.exposed/check">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Check the status of a site with StatusExposed">
     <meta property="og:description" content="Check the status of a site">
@@ -18,19 +19,18 @@
     <!-- Twitter Meta Tags -->
     <meta name="twitter:card" content="summary">
     <meta property="twitter:domain" content="status.exposed">
-    <meta property="twitter:url" content="https://status.exposed/add">
+    <meta property="twitter:url" content="https://status.exposed/check">
     <meta name="twitter:title" content="Check the status of a site with StatusExposed">
     <meta name="twitter:description" content="Check the status of a site">
 </HeadContent>
 
 <div class="control-section centerArea">
     <div class="text-center">
-
         <Validations StatusChanged="ValidationStatusChanged">
-            <Validation Validator="ValidateDomain">
+            <Validation Validator="CustomValidators.ValidateDomain">
                 <Field>
                     <FieldLabel>Website domain</FieldLabel>
-                    <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter" Autofocus="true">
+                    <TextEdit Placeholder="example.com" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
                         <Feedback>
                             <ValidationNone>Enter a domain.</ValidationNone>
                             <ValidationSuccess>Domain is valid.</ValidationSuccess>
@@ -39,24 +39,16 @@
                     </TextEdit>
                 </Field>
             </Validation>
-            <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Check</Button>
+            <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="isLoading">Check</Button>
         </Validations>
     </div>
 </div>
 
 @code {
-    [Parameter]
-    public string? AutoFillDomain { get; set; }
-
     private bool isValid;
     private bool isLoading;
 
     private string? domainText;
-
-    protected override void OnParametersSet()
-    {
-        domainText = AutoFillDomain?.Replace('/', '.');
-    }
 
     private void Submit()
     {
@@ -72,25 +64,6 @@
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
     {
         isValid = e.Status != ValidationStatus.Error;
-    }
-
-    private void ValidateDomain(ValidatorEventArgs e)
-    {
-        string? domain = e.Value?.ToString();
-
-        if (string.IsNullOrEmpty(domain))
-        {
-            e.Status = ValidationStatus.Error;
-            return;
-        }
-
-        if (Regex.IsMatch(domain, @"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]"))
-        {
-            e.Status = ValidationStatus.Success;
-            return;
-        }
-
-        e.Status = ValidationStatus.Error;
     }
 
     public void Enter(KeyboardEventArgs e)

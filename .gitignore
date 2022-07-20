@@ -400,3 +400,4 @@ FodyWeavers.xsd
 *.sln.iml
 /src/StatusExposed/MainDatabase.sqlite-shm
 /src/StatusExposed/MainDatabase.sqlite-wal
+/src/StatusExposed/appsettings.Development.json

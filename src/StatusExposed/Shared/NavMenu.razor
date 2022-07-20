@@ -16,7 +16,7 @@
                 <span class="oi oi-home" aria-hidden="true"></span> Home
             </NavLink>
         </div>
-          <div class="nav-item px-3">
+        <div class="nav-item px-3">
             <NavLink class="nav-link" href="check">
                 <span class="oi oi-pulse" aria-hidden="true"></span> Check site
             </NavLink>
@@ -26,6 +26,46 @@
                 <span class="oi oi-plus" aria-hidden="true"></span> Add site
             </NavLink>
         </div>
+        @if (File.Exists(Configuration["ApiInfoPath"]))
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="api">
+                    <span class="oi oi-cloud" aria-hidden="true"></span> API
+                </NavLink>
+            </div>
+        }
+
+        <Protected RequiredPermissions="role:admin">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="admin">
+                        <span class="oi oi-shield" aria-hidden="true"></span> Admin
+                    </NavLink>
+                </div>
+            </Authorized>
+        </Protected>
+
+        <Protected>
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="account">
+                        <span class="oi oi-person" aria-hidden="true"></span> Account
+                    </NavLink>
+                </div>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="logout">
+                        <span class="oi oi-lock-unlocked" aria-hidden="true"></span> Log Out
+                    </NavLink>
+                </div>
+            </Authorized>
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="login">
+                        <span class="oi oi-lock-locked" aria-hidden="true"></span> Log In
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </Protected>
         <!-- Use when implementing management system
             <div class="nav-item px-3">
             <NavLink class="nav-link" href="admin">
@@ -40,7 +80,7 @@
 <div class="ml-1 text-white-50" style=" position: fixed; bottom: 0; left: 0; z-index: 999">
     <a href="https://github.com/Stone-Red-Code/StatusExposed/blob/main/LICENCE" class="text-white-50">©@DateTime.UtcNow.Year</a>
 
-    @if (File.Exists(@Configuration["LegalNotePath"]))
+    @if (File.Exists(Configuration["LegalNotePath"]))
     {
         <span> - <a href="legal" class="text-white-50">Legal Notice</a></span>
     }

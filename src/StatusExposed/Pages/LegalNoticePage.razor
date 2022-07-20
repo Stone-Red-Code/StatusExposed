@@ -4,7 +4,7 @@
 
 @inject IConfiguration Configuration
 
-@if(File.Exists(@Configuration["LegalNotePath"]))
+@if(File.Exists(Configuration["LegalNotePath"]))
 {
     <Markdown FilePath="@Configuration["LegalNotePath"]"/>
 }

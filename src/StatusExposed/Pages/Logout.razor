@@ -1,0 +1,17 @@
+﻿@page "/logout"
+
+@using System.Text.RegularExpressions
+@using StatusExposed.Services
+
+@inject IAuthenticationService AuthenticationService
+
+@inject NavigationManager NavigationManager
+
+@code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await AuthenticationService.LogoutUserAsync();
+        NavigationManager.NavigateTo("/", true);
+    }
+}
