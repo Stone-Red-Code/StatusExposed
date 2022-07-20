@@ -10,7 +10,7 @@
     <Authorized>
         @if (user is not null)
         {
-            <h3 class="mb-5">Hello, @user.Email</h3>
+            <h3 class="mb-5 text-break">Hello, @user.Email</h3>
 
             <Div Display="Display.Flex" Flex="Flex.Wrap.JustifyContent.Center">
 
@@ -33,21 +33,32 @@
                         <Span Margin="Margin.IsAuto.OnY"><Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button></Span>
                     </Row>
 
-                    @if (subscibedServices is not null && subscibedServices.Count() > 0)
+                    @if (subscibedServices is not null)
                     {
-                        <p class="mt-4">Subscribed Services</p>
+                        <p class="mt-4">Subscribed Sites</p>
+
+                        if(subscibedServices.Count() == 0)
+                        {
+                            <Paragraph TextColor="TextColor.White50">
+                                You are not subscribed to any sites yet.<br>
+                                Use the form above to subscribe to a website and receive notifications when the status of a website changes.
+                            </Paragraph>
+                        }
 
                         <div class="services-list-table">
                             <Table Border="Border.Dark">
                                 <TableBody>
-                                    @foreach (ServiceInformation statusInformation in subscibedServices)
+                                    @foreach (ServiceInformation serviceInformation in subscibedServices)
                                     {
                                         <TableRow>
                                             <TableRowCell Style="width:20px;">
-                                                <Button Color="Color.Danger" Clicked="()=>Unsubscribe(statusInformation.ServicePageDomain)">Unsubscribe</Button>
+                                                <Button Color="Color.Danger" Clicked="()=>Unsubscribe(serviceInformation.ServicePageDomain)">Unsubscribe</Button>
+                                            </TableRowCell>
+                                            <TableRowCell Style="width:5px;">
+                                                <StatusCircle Status="serviceInformation.CurrentStatus.Status"/>
                                             </TableRowCell>
                                             <TableRowCell TextAlignment="TextAlignment.Start">
-                                                <Span><Strong TextColor="TextColor.White">@statusInformation.ServicePageDomain</Strong></Span>
+                                                <Span><Strong TextColor="TextColor.White">@serviceInformation.ServicePageDomain</Strong></Span>
                                             </TableRowCell>
                                         </TableRow>
                                     }

@@ -1,0 +1,21 @@
+﻿@using StatusExposed.Models
+
+<img class="@StatusColor-status-circle" alt="" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" />
+
+@code {
+    [Parameter, EditorRequired]
+    public Status Status { get; set; } = Status.Unknown;
+
+    private string StatusColor
+    {
+        get
+        {
+            return Status switch
+            {
+                Status.Up => "green",
+                Status.Down => "red",
+                _ => "orange"
+            };
+        }
+    }
+}
