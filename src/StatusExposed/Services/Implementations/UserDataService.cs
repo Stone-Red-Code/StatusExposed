@@ -89,6 +89,9 @@ public class UserDataService : IUserDataService
             return null;
         }
 
-        return mainDatabaseContext.Services.Include(s => s.Subscribers).Where(s => s.Subscribers.Any(s => s.Email == user.Email));
+        return mainDatabaseContext.Services
+            .Include(s => s.Subscribers)
+            .Include(s => s.StatusHistory)
+            .AsSplitQuery().Where(s => s.Subscribers.Any(s => s.Email == user.Email));
     }
 }

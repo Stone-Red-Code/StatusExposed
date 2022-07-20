@@ -19,7 +19,7 @@
                         <Validations StatusChanged="ValidationStatusChanged">
                             <Validation @ref="validation" Validator="CustomValidators.ValidateDomain">
                                 <Field Margin="Margin.Is3.OnX.FromEnd">
-                                    <FieldLabel>Subscribe to a service</FieldLabel>
+                                    <FieldLabel>Subscribe to a site</FieldLabel>
                                     <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
                                         <Feedback>
                                             <ValidationNone>Enter a domain.</ValidationNone>
@@ -35,9 +35,9 @@
 
                     @if (subscibedServices is not null)
                     {
-                        <p class="mt-4">Subscribed Sites</p>
+                        <p class="mt-4">Subscribed sites</p>
 
-                        if(subscibedServices.Count() == 0)
+                        if (subscibedServices.Count() == 0)
                         {
                             <Paragraph TextColor="TextColor.White50">
                                 You are not subscribed to any sites yet.<br>
@@ -55,10 +55,14 @@
                                                 <Button Color="Color.Danger" Clicked="()=>Unsubscribe(serviceInformation.ServicePageDomain)">Unsubscribe</Button>
                                             </TableRowCell>
                                             <TableRowCell Style="width:5px;">
-                                                <StatusCircle Status="serviceInformation.CurrentStatus.Status"/>
+                                                <StatusCircle Status="serviceInformation.CurrentStatus.Status" />
                                             </TableRowCell>
                                             <TableRowCell TextAlignment="TextAlignment.Start">
-                                                <Span><Strong TextColor="TextColor.White">@serviceInformation.ServicePageDomain</Strong></Span>
+                                                <Span>
+                                                    <a href="/status/@serviceInformation.ServicePageDomain.Replace('.', '/')">
+                                                        <Strong TextColor="TextColor.White">@serviceInformation.ServicePageDomain</Strong>
+                                                    </a>
+                                                </Span>
                                             </TableRowCell>
                                         </TableRow>
                                     }
@@ -106,7 +110,7 @@
     protected override async Task OnInitializedAsync()
     {
         user = await AuthenticationService.GetUserAsync();
-        subscibedServices = await UserDataService.GetAllSubscribedServicesAsync();
+        subscibedServices = (await UserDataService.GetAllSubscribedServicesAsync())?.OrderByDescending(s=>s.CurrentStatus.Status);
     }
 
     private async Task Subscribe()
