@@ -19,7 +19,7 @@
                         <Validations StatusChanged="ValidationStatusChanged">
                             <Validation @ref="validation" Validator="CustomValidators.ValidateDomain">
                                 <Field Margin="Margin.Is3.OnX.FromEnd">
-                                    <FieldLabel>Subscribe to a site</FieldLabel>
+                                    <FieldLabel Class="h5">Subscribe to a site</FieldLabel>
                                     <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
                                         <Feedback>
                                             <ValidationNone>Enter a domain.</ValidationNone>
@@ -35,7 +35,7 @@
 
                     @if (subscibedServices is not null)
                     {
-                        <p class="mt-4">Subscribed sites</p>
+                        <h5 class="mt-4">Subscribed sites (@subscibedServices.Count()/@siteSubscribtionsLimit)</h5>
 
                         if (subscibedServices.Count() == 0)
                         {
@@ -101,6 +101,7 @@
 
     private User? user;
     private IEnumerable<ServiceInformation>? subscibedServices;
+    private int siteSubscribtionsLimit;
 
     private bool isValid;
     private bool isLoading;
@@ -111,6 +112,7 @@
     {
         user = await AuthenticationService.GetUserAsync();
         subscibedServices = (await UserDataService.GetAllSubscribedServicesAsync())?.OrderByDescending(s=>s.CurrentStatus.Status);
+        siteSubscribtionsLimit = await UserDataService.GetSiteSubscribtionsLimitAsync();
     }
 
     private async Task Subscribe()

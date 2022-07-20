@@ -9,4 +9,6 @@ public interface IUserDataService
     Task<(bool Success, string? ErrorMessage)> UnsubscribeFromServiceAsync(string domain);
 
     Task<IEnumerable<ServiceInformation>?> GetAllSubscribedServicesAsync();
+
+    Task<int> GetSiteSubscribtionsLimitAsync();
 }

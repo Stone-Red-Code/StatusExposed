@@ -44,6 +44,11 @@ public class UserDataService : IUserDataService
             return (false, "Already subscribed to service.");
         }
 
+        if ((await GetAllSubscribedServicesAsync())!.Count() >= await GetSiteSubscribtionsLimitAsync())
+        {
+            return (false, "Max amount of subscriptions reached.");
+        }
+
         statusInformation.Subscribers.Add(new Subscriber(user.Email));
 
         await mainDatabaseContext.SaveChangesAsync();
@@ -93,5 +98,10 @@ public class UserDataService : IUserDataService
             .Include(s => s.Subscribers)
             .Include(s => s.StatusHistory)
             .AsSplitQuery().Where(s => s.Subscribers.Any(s => s.Email == user.Email));
+    }
+
+    public async Task<int> GetSiteSubscribtionsLimitAsync()
+    {
+        return await Task.Run(() => 10);
     }
 }
