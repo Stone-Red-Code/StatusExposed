@@ -30,7 +30,11 @@
                                 </Field>
                             </Validation>
                         </Validations>
-                        <Span Margin="Margin.IsAuto.OnY"><Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button></Span>
+                        <Span Margin="Margin.IsAuto.OnY">
+                           <Tooltip Text="Subscribe (Notifies you by E-Mail when the status changes)">
+                               <Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button>
+                           </Tooltip>    
+                           </Span>
                     </Row>
 
                     @if (subscibedServices is not null)
