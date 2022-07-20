@@ -136,7 +136,6 @@ public class StatusService : IStatusService
         {
             logger.LogDebug("Status of {service} changed", serviceInformation.ServicePageDomain);
 
-            // Fire and forget (but with logs) xD
             SendEmails(serviceInformation, oldStatus);
         }
 
@@ -176,7 +175,8 @@ public class StatusService : IStatusService
 
     private void SendEmails(ServiceInformation serviceInformation, Status oldStatus)
     {
-        _ = Task.Run(() =>
+        // Fire and forget (but with logs) xD
+        _ = Task.Run(async () =>
         {
             using IServiceScope scope = serviceScopeFactory.CreateScope();
             IEmailService? emailService = scope.ServiceProvider.GetService<IEmailService>();
@@ -195,7 +195,7 @@ public class StatusService : IStatusService
 
                 if (File.Exists(mailOptions?.TemplatePaths?.StatusChanged))
                 {
-                    emailService.SendWithTemeplate(
+                    await emailService.SendWithTemeplateAsync(
                         subscriberAddresses,
                         $"{serviceInformation.ServicePageDomain} is {serviceInformation.CurrentStatus.Status}",
                         mailOptions.TemplatePaths.StatusChanged,
@@ -206,7 +206,7 @@ public class StatusService : IStatusService
                 else
                 {
                     logger.LogWarning("Status changed E-Mail template not found, using fall back template.");
-                    emailService.Send(
+                    await emailService.SendAsync(
                         subscriberAddresses,
                         $"{serviceInformation.ServicePageDomain} is {serviceInformation.CurrentStatus.Status}",
                         $"The status of {serviceInformation.ServicePageDomain} changed from {oldStatus} to {serviceInformation.CurrentStatus.Status}");

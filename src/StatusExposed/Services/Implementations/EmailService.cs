@@ -20,7 +20,7 @@ public class EmailService : IEmailService
         this.mailOptions = mailOptions.Value;
     }
 
-    public void Send(string to, string subject, string html, string? from = null)
+    public async Task SendAsync(string to, string subject, string html, string? from = null)
     {
         // create message
         MimeMessage email = new MimeMessage();
@@ -30,14 +30,10 @@ public class EmailService : IEmailService
         email.Body = new TextPart(TextFormat.Html) { Text = html };
 
         // send email
-        using SmtpClient smtp = new SmtpClient();
-        smtp.Connect(mailOptions.SmtpServer, mailOptions.SmtpPort, SecureSocketOptions.StartTls);
-        smtp.Authenticate(mailOptions.SmtpUser, mailOptions.SmtpPassword);
-        smtp.Send(email);
-        smtp.Disconnect(true);
+        await SendMessageAsync(email);
     }
 
-    public void Send(IEnumerable<string> to, string subject, string html, string? from = null)
+    public async Task SendAsync(IEnumerable<string> to, string subject, string html, string? from = null)
     {
         // create message
         MimeMessage email = new MimeMessage();
@@ -47,23 +43,19 @@ public class EmailService : IEmailService
         email.Body = new TextPart(TextFormat.Html) { Text = html };
 
         // send email
-        using SmtpClient smtp = new SmtpClient();
-        smtp.Connect(mailOptions.SmtpServer, mailOptions.SmtpPort, SecureSocketOptions.StartTls);
-        smtp.Authenticate(mailOptions.SmtpUser, mailOptions.SmtpPassword);
-        smtp.Send(email);
-        smtp.Disconnect(true);
+        await SendMessageAsync(email);
     }
 
-    public void SendWithTemeplate(string to, string subject, string templatePath, string? from = null, params TemplateParameter[] templateParameters)
+    public async Task SendWithTemeplateAsync(string to, string subject, string templatePath, string? from = null, params TemplateParameter[] templateParameters)
     {
         string html = ProcessEmailTemplate(templatePath, templateParameters);
-        Send(to, subject, html, from);
+        await SendAsync(to, subject, html, from);
     }
 
-    public void SendWithTemeplate(IEnumerable<string> to, string subject, string templatePath, string? from = null, params TemplateParameter[] templateParameters)
+    public async Task SendWithTemeplateAsync(IEnumerable<string> to, string subject, string templatePath, string? from = null, params TemplateParameter[] templateParameters)
     {
         string html = ProcessEmailTemplate(templatePath, templateParameters);
-        Send(to, subject, html, from);
+        await SendAsync(to, subject, html, from);
     }
 
     private static string ProcessEmailTemplate(string templatePath, params TemplateParameter[] templateParameters)
@@ -75,5 +67,14 @@ public class EmailService : IEmailService
         }
 
         return html;
+    }
+
+    private async Task SendMessageAsync(MimeMessage email)
+    {
+        using SmtpClient smtp = new SmtpClient();
+        await smtp.ConnectAsync(mailOptions.SmtpServer, mailOptions.SmtpPort, SecureSocketOptions.StartTls);
+        await smtp.AuthenticateAsync(mailOptions.SmtpUser, mailOptions.SmtpPassword);
+        await smtp.SendAsync(email);
+        await smtp.DisconnectAsync(true);
     }
 }

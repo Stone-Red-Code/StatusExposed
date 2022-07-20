@@ -47,7 +47,7 @@ else if (loaded)
     {
         User? user = await AuthenticationService.GetUserAsync();
 
-        if (user is null)
+        if (user is null || !user.IsVerified)
         {
             isAuthorized = false;
             StateHasChanged();

@@ -63,7 +63,9 @@ public class AuthenticationService : IAuthenticationService
             IsVerified = false
         };
 
-        SendVerificationEmail(email, mailToken);
+        user.Permissions.Add("role:user");
+
+        await SendVerificationEmail(email, mailToken);
 
         mainDatabaseContext.Users.Add(user);
         await mainDatabaseContext.SaveChangesAsync();
@@ -112,7 +114,7 @@ public class AuthenticationService : IAuthenticationService
         user.LastLoginDate = DateTime.UtcNow;
         user.SessionToken = mailToken;
 
-        SendVerificationEmail(email, mailToken);
+        await SendVerificationEmail(email, mailToken);
 
         await mainDatabaseContext.SaveChangesAsync();
     }
@@ -175,18 +177,18 @@ public class AuthenticationService : IAuthenticationService
         return true;
     }
 
-    private void SendVerificationEmail(string email, string mailToken)
+    private async Task SendVerificationEmail(string email, string mailToken)
     {
         string verificationLink = navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}").ToString();
 
         if (File.Exists(mailOptions.TemplatePaths?.AccountVerification))
         {
-            emailService.SendWithTemeplate(email, "Account Verification", mailOptions.TemplatePaths.AccountVerification, templateParameters: new TemplateParameter("verification-link", verificationLink));
+            await emailService.SendWithTemeplateAsync(email, "Account Verification", mailOptions.TemplatePaths.AccountVerification, templateParameters: new TemplateParameter("verification-link", verificationLink));
         }
         else
         {
             logger.LogWarning("Account verification E-Mail template not found, using fall back template.");
-            emailService.Send(email, "Account Verification", $"Verify your account: <a href={verificationLink}>verify</a>");
+            await emailService.SendAsync(email, "Account Verification", $"Verify your account: <a href={verificationLink}>verify</a>");
         }
     }
 }
