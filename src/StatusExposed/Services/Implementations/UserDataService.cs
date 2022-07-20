@@ -29,7 +29,7 @@ public class UserDataService : IUserDataService
 
         if (statusInformation is null)
         {
-            return (false, $"Domain is not tracked!");
+            return (false, $"Site is not tracked!");
         }
 
         User? user = await authenticationService.GetUserAsync();
@@ -41,7 +41,7 @@ public class UserDataService : IUserDataService
 
         if (statusInformation.Subscribers.Any(s => s.Email == user.Email))
         {
-            return (false, "Already subscribed to service.");
+            return (false, "Already subscribed to site.");
         }
 
         if ((await GetAllSubscribedServicesAsync())!.Count() >= await GetSiteSubscribtionsLimitAsync())
@@ -67,7 +67,7 @@ public class UserDataService : IUserDataService
 
         if (statusInformation is null)
         {
-            return (false, $"Service is not tracked!");
+            return (false, $"Site is not tracked!");
         }
 
         User? user = await authenticationService.GetUserAsync();
@@ -90,7 +90,7 @@ public class UserDataService : IUserDataService
 
         if (user is null)
         {
-            logger.LogError("Anonymous can't retrieve a list of all subscribed services!");
+            logger.LogError("Anonymous can't retrieve a list of all subscribed sites!");
             return null;
         }
 
