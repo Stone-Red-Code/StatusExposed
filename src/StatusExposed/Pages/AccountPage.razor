@@ -51,13 +51,13 @@
                                     @foreach (ServiceInformation serviceInformation in subscibedServices)
                                     {
                                         <TableRow>
-                                            <TableRowCell Style="width:20px;">
+                                            <TableRowCell Class="align-middle" Style="width:20px;">
                                                 <Button Color="Color.Danger" Clicked="()=>Unsubscribe(serviceInformation.ServicePageDomain)">Unsubscribe</Button>
                                             </TableRowCell>
-                                            <TableRowCell Style="width:5px;">
+                                            <TableRowCell Class="align-middle" Style="width:5px;">
                                                 <StatusCircle Status="serviceInformation.CurrentStatus.Status" />
                                             </TableRowCell>
-                                            <TableRowCell TextAlignment="TextAlignment.Start">
+                                            <TableRowCell Class="align-middle" TextAlignment="TextAlignment.Start">
                                                 <Span>
                                                     <a href="/status/@serviceInformation.ServicePageDomain.Replace('.', '/')">
                                                         <Strong TextColor="TextColor.White">@serviceInformation.ServicePageDomain</Strong>

@@ -3,8 +3,10 @@
 @using StatusExposed.Models
 @using StatusExposed.Services
 
-@inject NavigationManager NavigationManger
+@inject NavigationManager NavigationManager
 @inject IStatusService StatusService
+@inject IUserDataService UserDataService
+@inject IAuthenticationService AuthenticationService
 
 <PageTitle>@PlainStatusString</PageTitle>
 
@@ -66,8 +68,8 @@
             }
 
             <div style="height: 350px; width: 700px" class="d-none d-lg-block m-auto">
-                <br/>
-                <br/>
+                <br />
+                <br />
                 @if (statusInformation is not null)
                 {
                     <StatusChart StatusInformation="statusInformation" />
@@ -85,22 +87,28 @@
 </div>
 
 
-<!-- Use when implementing management system
+
 <div style=" position: fixed; bottom: 0; right: 0;">
-@if (reported)
-{
-        <Tooltip Text="Successfully reported site">
+    @if (subscribed && subscribeError is null)
+    {
+        <Tooltip Text="Successfully subscribed to site.">
             <Button Color="Color.Link" Class="shadow-none" Disabled="true"><span class="oi oi-circle-check m-4 text-success" aria-hidden="true" /></Button>
         </Tooltip>
-}
-else
-{
-        <Tooltip Text="Report site" @onclick="(e)=>reported = true" style="cursor: pointer;">
-            <Button Color="Color.Link" Class="shadow-none zoom"><span class="oi oi-flag m-4 text-danger" aria-hidden="true" /></Button>
+    }
+    else if (subscribed && subscribeError is not null)
+    {
+        <Tooltip Text="@subscribeError">
+            <Button Color="Color.Link" Class="shadow-none" Disabled="true"><span class="oi oi-circle-x m-4 text-danger" aria-hidden="true" /></Button>
         </Tooltip>
-}
+    }
+    else
+    {
+        <Tooltip Text="Subscribe (Notify when status changes)" @onclick="(e)=>Subscribe()" style="cursor: pointer;">
+            <Button Color="Color.Link" Class="shadow-none zoom"><span class="oi oi-bell m-4 text-warning" aria-hidden="true" /></Button>
+        </Tooltip>
+    }
 </div>
--->
+
 @code {
     [Parameter]
     public string? ServicePageDomain { get; set; }
@@ -127,14 +135,14 @@ else
 
     private bool doesExist = true;
 
-    // Use when implementing management system
-    // private bool reported = false;
+    private bool subscribed;
+    private string? subscribeError;
 
     protected override async Task OnParametersSetAsync()
     {
         if (string.IsNullOrWhiteSpace(ServicePageDomain))
         {
-            NavigationManger.NavigateTo("/");
+            NavigationManager.NavigateTo("/");
             return;
         }
 
@@ -149,5 +157,32 @@ else
         }
 
         this.statusInformation = statusInformation;
+    }
+
+    private async Task Subscribe()
+    {
+        if(!await AuthenticationService.IsAuthenticated())
+        {
+            NavigationManager.NavigateTo("/login");
+            return;
+        }
+
+        if (statusInformation?.ServicePageDomain is null)
+        {
+            return;
+        }
+
+        (bool IsSuccess, string? ErrorMessage) result = await UserDataService.SubscribeToServiceAsync(statusInformation.ServicePageDomain);
+
+        if (result.IsSuccess)
+        {
+            subscribeError = null;
+        }
+        else
+        {
+            subscribeError = result.ErrorMessage;
+        }
+
+        subscribed = true;
     }
 }
