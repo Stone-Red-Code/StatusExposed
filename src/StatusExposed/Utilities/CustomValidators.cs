@@ -43,4 +43,23 @@ public static class CustomValidators
 
         e.Status = ValidationStatus.Error;
     }
+
+    public static void ValidatePermission(ValidatorEventArgs e)
+    {
+        string? permission = e.Value?.ToString();
+
+        if (string.IsNullOrWhiteSpace(permission))
+        {
+            e.Status = ValidationStatus.Error;
+            return;
+        }
+
+        if (Regex.IsMatch(permission, @"^[a-zA-Z0-9]{2,}[:]{1}[a-zA-Z0-9]{1,}", RegexOptions.None, TimeSpan.FromSeconds(10)) && permission.Count(c => c == ':') == 1)
+        {
+            e.Status = ValidationStatus.Success;
+            return;
+        }
+
+        e.Status = ValidationStatus.Error;
+    }
 }

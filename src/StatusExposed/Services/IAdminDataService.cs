@@ -11,4 +11,8 @@ public interface IAdminDataService
     Task<int> GetAmountOfUsersAsync(bool? verified = null);
 
     Task<int> GetAmountOfServicesAsync();
+
+    Task AddPermissionToUserAsync(string email, Permission permission);
+
+    Task RemovePermissionFromUserAsync(string email, Permission permission);
 }

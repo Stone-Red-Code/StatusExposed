@@ -17,6 +17,10 @@ public class Permission
         {
             throw new ArgumentException("Permissions are not allowed to have spaces in them!");
         }
+        else if (name.Count(c => c == ':') != 1)
+        {
+            throw new ArgumentException("Permissions cannot have more or less than one colon!");
+        }
 
         Name = name;
     }

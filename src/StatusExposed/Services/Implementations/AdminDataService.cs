@@ -52,4 +52,32 @@ public class AdminDataService : IAdminDataService
     {
         throw new NotImplementedException();
     }
+
+    public async Task AddPermissionToUserAsync(string email, Permission permission)
+    {
+        User? user = await GetUserInfoAsync(email);
+
+        if (user is null)
+        {
+            return;
+        }
+
+        user.Permissions.Add(permission);
+
+        await mainDatabaseContext.SaveChangesAsync();
+    }
+
+    public async Task RemovePermissionFromUserAsync(string email, Permission permission)
+    {
+        User? user = await GetUserInfoAsync(email);
+
+        if (user is null)
+        {
+            return;
+        }
+
+        user.Permissions.Remove(permission);
+
+        await mainDatabaseContext.SaveChangesAsync();
+    }
 }

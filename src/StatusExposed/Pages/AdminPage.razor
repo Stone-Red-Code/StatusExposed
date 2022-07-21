@@ -21,11 +21,11 @@
         <h3 class="mb-3 mt-5">Management</h3>
 
         <Row Margin="Margin.Is0.FromStart">
-            <Validations StatusChanged="ValidationStatusChanged">
+            <Validations StatusChanged="UserEmailValidationStatusChanged">
                 <Validation @ref="validation" Validator="ValidationRule.IsEmail">
                     <Field Margin="Margin.Is3.OnX.FromEnd">
                         <FieldLabel>Check user</FieldLabel>
-                        <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="userEmail" KeyDown="Enter" Disabled="userDataIsLoading">
+                        <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="userEmail" KeyDown="Enter_GetUserTextEdit" Disabled="userDataIsLoading">
                             <Feedback>
                                 <ValidationNone>Enter a E-mail.</ValidationNone>
                                 <ValidationSuccess>E-mail is valid.</ValidationSuccess>
@@ -88,12 +88,12 @@
         userDataIsLoading = false;
     }
 
-    private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
+    private void UserEmailValidationStatusChanged(ValidationsStatusChangedEventArgs e)
     {
         userEmailIsValid = e.Status != ValidationStatus.Error;
     }
 
-    public async Task Enter(KeyboardEventArgs e)
+    public async Task Enter_GetUserTextEdit(KeyboardEventArgs e)
     {
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
