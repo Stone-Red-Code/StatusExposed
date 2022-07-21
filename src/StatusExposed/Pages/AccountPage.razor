@@ -31,10 +31,10 @@
                             </Validation>
                         </Validations>
                         <Span Margin="Margin.IsAuto.OnY">
-                           <Tooltip Text="Subscribe (Notifies you by E-mail when the status changes)">
-                               <Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button>
-                           </Tooltip>    
-                           </Span>
+                            <Tooltip Text="Subscribe (Notifies you by E-mail when the status changes)">
+                                <Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button>
+                            </Tooltip>
+                        </Span>
                     </Row>
 
                     @if (subscibedServices is not null)
@@ -115,7 +115,7 @@
     protected override async Task OnInitializedAsync()
     {
         user = await AuthenticationService.GetUserAsync();
-        subscibedServices = (await UserDataService.GetAllSubscribedServicesAsync())?.OrderByDescending(s=>s.CurrentStatus.Status);
+        subscibedServices = (await UserDataService.GetAllSubscribedServicesAsync())?.OrderByDescending(s => s.CurrentStatus.Status);
         siteSubscribtionsLimit = await UserDataService.GetSiteSubscribtionsLimitAsync();
     }
 
@@ -132,8 +132,8 @@
 
         if (result.IsSuccess)
         {
-            validation.NotifyValidationStatusChanged(ValidationStatus.Success, new[] { $"Successfully subscribed to {domainText.Trim().ToLower()}" });
             domainText = string.Empty;
+            validation.NotifyValidationStatusChanged(ValidationStatus.Error);
         }
         else
         {
