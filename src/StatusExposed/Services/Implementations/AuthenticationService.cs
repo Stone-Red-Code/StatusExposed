@@ -135,8 +135,6 @@ public class AuthenticationService : IAuthenticationService
         user.LastLoginDate = DateTime.UtcNow;
         user.SessionToken = deletionToken;
 
-
-
         await SendDeletionEmail(user.Email, deletionToken);
 
         await mainDatabaseContext.SaveChangesAsync();
@@ -149,15 +147,22 @@ public class AuthenticationService : IAuthenticationService
             return false;
         }
 
-        User? user = await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.SessionToken == deletionToken);
+        User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.SessionToken == deletionToken);
 
         if (user is null)
         {
             return false;
         }
 
-        mainDatabaseContext.Users.Remove(user);
+        user.Permissions.Clear();
+
         mainDatabaseContext.Subscriber.RemoveRange(mainDatabaseContext.Subscriber.Where(s => s.Email == user.Email));
+
+        await mainDatabaseContext.SaveChangesAsync();
+
+        mainDatabaseContext.Users.Remove(user);
+
+        await mainDatabaseContext.SaveChangesAsync();
 
         return true;
     }
