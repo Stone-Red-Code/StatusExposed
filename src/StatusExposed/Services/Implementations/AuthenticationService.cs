@@ -119,9 +119,47 @@ public class AuthenticationService : IAuthenticationService
         await mainDatabaseContext.SaveChangesAsync();
     }
 
-    public Task DeleteUserAsync()
+    public async Task DeleteRequestUserAsync()
     {
-        throw new NotImplementedException();
+        string deletionToken = GenerateDeletionToken();
+
+        User? user = await GetUserAsync();
+
+        if (user is null)
+        {
+            return;
+        }
+
+        await LogoutUserAsync();
+
+        user.LastLoginDate = DateTime.UtcNow;
+        user.SessionToken = deletionToken;
+
+
+
+        await SendDeletionEmail(user.Email, deletionToken);
+
+        await mainDatabaseContext.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteUserAsync(string deletionToken)
+    {
+        if (!deletionToken.StartsWith("delete-"))
+        {
+            return false;
+        }
+
+        User? user = await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.SessionToken == deletionToken);
+
+        if (user is null)
+        {
+            return false;
+        }
+
+        mainDatabaseContext.Users.Remove(user);
+        mainDatabaseContext.Subscriber.RemoveRange(mainDatabaseContext.Subscriber.Where(s => s.Email == user.Email));
+
+        return true;
     }
 
     public async Task<bool> UserExistsAsync(string email)
@@ -132,6 +170,8 @@ public class AuthenticationService : IAuthenticationService
     public async Task LogoutUserAsync()
     {
         string? token = httpContextAccessor.HttpContext?.Request.Cookies["token"]?.ToString();
+
+        await WriteCookieAsync("token", string.Empty, 0);
 
         if (!IsValidToken(token))
         {
@@ -148,8 +188,6 @@ public class AuthenticationService : IAuthenticationService
         user.SessionToken = null;
 
         await mainDatabaseContext.SaveChangesAsync();
-
-        await WriteCookieAsync("token", string.Empty, 0);
     }
 
     public async Task<bool> IsAuthenticated()
@@ -167,9 +205,14 @@ public class AuthenticationService : IAuthenticationService
         return "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
     }
 
+    private static string GenerateDeletionToken()
+    {
+        return "delete-" + SecureStringGenerator.CreateCryptographicRandomString(64);
+    }
+
     private static bool IsValidToken(string? token)
     {
-        if (string.IsNullOrWhiteSpace(token) || token.StartsWith("mail-"))
+        if (string.IsNullOrWhiteSpace(token) || token.StartsWith("mail-") || token.StartsWith("delete-"))
         {
             return false;
         }
@@ -189,6 +232,21 @@ public class AuthenticationService : IAuthenticationService
         {
             logger.LogWarning("Account verification E-mail template not found, using fall back template.");
             await emailService.SendAsync(email, "Account Verification", $"Verify your account: <a href={verificationLink}>verify</a>");
+        }
+    }
+
+    private async Task SendDeletionEmail(string email, string deletionToken)
+    {
+        string verificationLink = navigationManager.ToAbsoluteUri($"/logout/{HttpUtility.UrlEncode(deletionToken)}").ToString();
+
+        if (File.Exists(mailOptions.TemplatePaths?.AccountDeletion))
+        {
+            await emailService.SendWithTemeplateAsync(email, "Account Deletion", mailOptions.TemplatePaths.AccountDeletion, templateParameters: new TemplateParameter("deletion-link", verificationLink));
+        }
+        else
+        {
+            logger.LogWarning("Account deletion E-mail template not found, using fall back template.");
+            await emailService.SendAsync(email, "Account Deletion", $"Delete your account: <a href={verificationLink}>delete</a>");
         }
     }
 }

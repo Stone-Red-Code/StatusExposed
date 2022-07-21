@@ -5,6 +5,8 @@
 
 @inject IAuthenticationService AuthenticationService
 @inject IUserDataService UserDataService
+@inject IMessageService MessageService
+@inject NavigationManager NavigationManager
 
 <Protected>
     <Authorized>
@@ -93,6 +95,8 @@
                 </Div>
             </Div>
 
+            <Button Margin="Margin.Is5.FromTop" Color="Color.Danger" Clicked="DeleteAccount" Size="Size.Small">Delete Account</Button>
+
         }
     </Authorized>
     <NotAuthorized>
@@ -146,6 +150,12 @@
     private async Task Unsubscribe(string domain)
     {
         await UserDataService.UnsubscribeFromServiceAsync(domain);
+    }
+
+    private async Task DeleteAccount()
+    {
+        await AuthenticationService.DeleteRequestUserAsync();
+        await MessageService.Error("We have sent you an account deletion E-mail! You have been automatically logged out.", "Account Deletion!");
     }
 
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
