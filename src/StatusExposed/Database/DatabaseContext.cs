@@ -9,6 +9,8 @@ public class DatabaseContext : DbContext
     public DbSet<ServiceInformation> Services { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
 
+    public DbSet<Subscriber> Subscriber { get; set; } = null!;
+
     public string DbPath { get; }
 
     public DatabaseContext(IDatabaseConfiguration configuration)

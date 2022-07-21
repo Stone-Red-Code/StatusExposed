@@ -77,7 +77,9 @@ public class UserDataService : IUserDataService
             return (false, "User is null, try to login!");
         }
 
-        statusInformation.Subscribers = statusInformation.Subscribers.Where(u => u.Email != user.Email).ToList();
+        List<Subscriber>? entriesToDelete = statusInformation.Subscribers.Where(u => u.Email == user.Email).ToList();
+
+        mainDatabaseContext.Subscriber.RemoveRange(entriesToDelete);
 
         await mainDatabaseContext.SaveChangesAsync();
 
