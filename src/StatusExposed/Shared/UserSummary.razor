@@ -1,0 +1,27 @@
+﻿@using StatusExposed.Models
+
+ @if (User is not null)
+        {
+            <p>
+                Id: @User.Id
+                <br />
+                E-mail: @User.Email
+                <br />
+                Verified: @User.IsVerified
+                <br />
+                Last login date: @User.LastLoginDate
+                <br />
+                Permissions:
+                <ul>
+                    @foreach (Permission permission in User.Permissions)
+                    {
+                        <li>@permission.Name</li>
+                    }
+                </ul>
+            </p>
+        }
+
+@code {
+    [Parameter, EditorRequired]
+    public User? User { get; set; }
+}

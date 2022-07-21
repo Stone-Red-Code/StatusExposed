@@ -26,11 +26,13 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
 builder.Services.AddSingleton<IScheduledUpdateService, ScheduledUpdateService>();
+builder.Services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
+builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUserDataService, UserDataService>();
+builder.Services.AddScoped<IAdminDataService, AdminDataService>();
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddBlazorise(options => { options.Immediate = true; });
 builder.Services.AddBootstrapProviders();
