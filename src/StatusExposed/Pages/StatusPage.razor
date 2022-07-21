@@ -91,13 +91,13 @@
 <div style=" position: fixed; bottom: 0; right: 0;">
     @if (subscribed && subscribeError is null)
     {
-        <Tooltip Text="Successfully subscribed to site.">
+        <Tooltip Text="Successfully subscribed to site." Trigger="TooltipTrigger.Click | TooltipTrigger.Focus">
             <Button Color="Color.Link" Class="shadow-none" Disabled="true"><span class="oi oi-circle-check m-4 text-success" aria-hidden="true" /></Button>
         </Tooltip>
     }
     else if (subscribed && subscribeError is not null)
     {
-        <Tooltip Text="@subscribeError">
+        <Tooltip Text="@subscribeError" Trigger="TooltipTrigger.Click | TooltipTrigger.Focus">
             <Button Color="Color.Link" Class="shadow-none" Disabled="true"><span class="oi oi-circle-x m-4 text-danger" aria-hidden="true" /></Button>
         </Tooltip>
     }
