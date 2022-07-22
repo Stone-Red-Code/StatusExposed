@@ -8,7 +8,7 @@ public interface IAuthenticationService
 
     Task RegisterUserAsync(string email);
 
-    Task<bool> LoginUserAsync(string email);
+    Task<(bool Success, string? Message)> LoginUserAsync(string email);
 
     Task LogoutUserAsync();
 
