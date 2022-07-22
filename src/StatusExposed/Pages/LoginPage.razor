@@ -29,7 +29,7 @@
                 @if (File.Exists(Configuration["LegalNotePath"]))
                 {
                     <Validation Validator="ValidationRule.IsChecked">
-                        <Check TValue="bool">
+                        <Check TValue="bool" Disabled="isLoading">
                             <ChildContent>
                                 <Span TextColor="TextColor.Light">
                                     I accept the <a style="text-decoration: underline;" class="text-light" href="/legal">privacy policy and TOS</a>
