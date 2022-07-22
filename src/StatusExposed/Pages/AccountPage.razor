@@ -154,8 +154,11 @@
 
     private async Task DeleteAccount()
     {
-        await AuthenticationService.DeleteRequestUserAsync();
-        await MessageService.Error("We have sent you an account deletion E-mail! You have been automatically logged out.", "Account Deletion!");
+        if (await MessageService.Confirm("Do you really want to delete your account?<br>All off your data will be permanently deleted!", "Account Deletion!", (o) => o.CancelButtonText = "No, I'll give you another chance!"))
+        {
+            await AuthenticationService.DeleteRequestUserAsync();
+            await MessageService.Error("We have sent you an account deletion E-mail!<br>You have been automatically logged out.", "Account Deletion!");
+        }
     }
 
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
