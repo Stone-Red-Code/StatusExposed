@@ -5,6 +5,7 @@
 @using StatusExposed.Services
 
 @inject IAuthenticationService AuthenticationService
+@inject IConfiguration Configuration
 
 @inject NavigationManager NavigationManager
 
@@ -25,7 +26,19 @@
                         </TextEdit>
                     </Field>
                 </Validation>
-                <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Log In/Create Account</Button>
+                @if (File.Exists(Configuration["LegalNotePath"]))
+                {
+                    <Validation Validator="ValidationRule.IsChecked">
+                        <Check TValue="bool">
+                            <ChildContent>
+                                <Span TextColor="TextColor.Light">
+                                    I accept the <a style="text-decoration: underline;" class="text-light" href="/legal">privacy policy and TOS</a>
+                                </Span>
+                            </ChildContent>
+                        </Check>
+                    </Validation>
+                }
+                <Button Margin="Margin.Is3.FromTop" Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Log In/Create Account</Button>
             </Validations>
         }
 
