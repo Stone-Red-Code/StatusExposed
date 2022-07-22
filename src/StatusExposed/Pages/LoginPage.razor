@@ -75,17 +75,24 @@
         }
 
         isLoading = true;
-        infoText = "We have sent you a verification E-Mail.";
+        infoText = "Processing information...";
         StateHasChanged();
 
         if (await AuthenticationService.UserExistsAsync(email))
         {
-            await AuthenticationService.LoginUserAsync(email);
+            if(!await AuthenticationService.LoginUserAsync(email))
+            {
+                infoText = "Account has been banned!";
+                isLoading = false;
+                return;
+            }
         }
         else
         {
             await AuthenticationService.RegisterUserAsync(email);
         }
+
+        infoText = "We have sent you a verification E-Mail.";
     }
 
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)

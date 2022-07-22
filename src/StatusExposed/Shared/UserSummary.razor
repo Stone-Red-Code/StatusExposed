@@ -32,11 +32,11 @@
 
                 <TableRow>
                     <TableRowCell Style="width:20px;">
-                        <Button Width="Width.Is100" Color="Color.Primary" Disabled="!newPermissionIsValid || newPermissionLoading">Add</Button>
+                        <Button Width="Width.Is100" Color="Color.Primary" Clicked="AddPermission" Disabled="!newPermissionIsValid || newPermissionLoading">Add</Button>
                     </TableRowCell>
                     <TableRowCell>
                         <Validations StatusChanged="NewRoleValidationStatusChanged">
-                            <Validation Validator="CustomValidators.ValidatePermission">
+                            <Validation @ref="permissionValidation" Validator="CustomValidators.ValidatePermission">
                                 <TextEdit Placeholder="<type>:<value>" @bind-Text="newPermission" KeyDown="Enter_NewRoleTextEdit" Disabled="newPermissionLoading">
                                     <Feedback>
                                         <ValidationNone>Enter a permission.</ValidationNone>
@@ -50,12 +50,23 @@
                 </TableRow>
             </TableBody>
         </Table>
+
+        @if (User.IsBanned)
+        {
+            <Button Color="Color.Danger" Clicked="SetUserBan">Unban user</Button>
+        }
+        else
+        {
+            <Button Color="Color.Danger" Clicked="SetUserBan">Ban user</Button>
+        }
     </p>
 }
 
 @code {
     [Parameter, EditorRequired]
     public User? User { get; set; }
+
+    Validation permissionValidation = null!;
 
     string? newPermission;
     bool newPermissionIsValid;
@@ -70,8 +81,10 @@
 
         newPermissionLoading = true;
 
-        await AdminDataService.AddPermissionToUserAsync(User.Email, newPermission);
+        await AdminDataService.AddPermissionToUserAsync(User.Email, newPermission.Replace(' ', '_'));
 
+        newPermission = null;
+        permissionValidation.NotifyValidationStatusChanged(ValidationStatus.Error);
         newPermissionLoading = false;
     }
 
@@ -83,6 +96,16 @@
         }
 
         await AdminDataService.RemovePermissionFromUserAsync(User.Email, permission);
+    }
+
+    private async Task SetUserBan()
+    {
+        if (User is null)
+        {
+            return;
+        }
+
+        await AdminDataService.SetUserBan(User.Email, !User.IsBanned);
     }
 
     private void NewRoleValidationStatusChanged(ValidationsStatusChangedEventArgs e)

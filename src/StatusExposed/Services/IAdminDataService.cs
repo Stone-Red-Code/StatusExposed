@@ -15,4 +15,6 @@ public interface IAdminDataService
     Task AddPermissionToUserAsync(string email, Permission permission);
 
     Task RemovePermissionFromUserAsync(string email, Permission permission);
+
+    Task SetUserBan(string email, bool isBanned);
 }

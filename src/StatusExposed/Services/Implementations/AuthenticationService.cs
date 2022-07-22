@@ -100,15 +100,15 @@ public class AuthenticationService : IAuthenticationService
         }
     }
 
-    public async Task LoginUserAsync(string email)
+    public async Task<bool> LoginUserAsync(string email)
     {
         string mailToken = GenerateMailToken();
 
         User? user = await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-        if (user is null)
+        if (user is null || user.IsBanned)
         {
-            return;
+            return false;
         }
 
         user.LastLoginDate = DateTime.UtcNow;
@@ -117,6 +117,8 @@ public class AuthenticationService : IAuthenticationService
         await SendVerificationEmail(email, mailToken);
 
         await mainDatabaseContext.SaveChangesAsync();
+
+        return true;
     }
 
     public Task DeleteUserAsync()

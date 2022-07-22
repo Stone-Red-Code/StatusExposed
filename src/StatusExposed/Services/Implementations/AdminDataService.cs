@@ -45,7 +45,12 @@ public class AdminDataService : IAdminDataService
 
     public async Task<User?> GetUserInfoAsync(string email)
     {
-        return await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (!await authorizationService.IsAuthorized("role:admin"))
+        {
+            return null;
+        }
+
+        return await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
     }
 
     public Task LogOutUserAsync(string email)
@@ -55,6 +60,11 @@ public class AdminDataService : IAdminDataService
 
     public async Task AddPermissionToUserAsync(string email, Permission permission)
     {
+        if (!await authorizationService.IsAuthorized("role:admin"))
+        {
+            return;
+        }
+
         User? user = await GetUserInfoAsync(email);
 
         if (user is null)
@@ -69,6 +79,11 @@ public class AdminDataService : IAdminDataService
 
     public async Task RemovePermissionFromUserAsync(string email, Permission permission)
     {
+        if (!await authorizationService.IsAuthorized("role:admin"))
+        {
+            return;
+        }
+
         User? user = await GetUserInfoAsync(email);
 
         if (user is null)
@@ -77,6 +92,25 @@ public class AdminDataService : IAdminDataService
         }
 
         user.Permissions.Remove(permission);
+
+        await mainDatabaseContext.SaveChangesAsync();
+    }
+
+    public async Task SetUserBan(string email, bool isBanned)
+    {
+        if (!await authorizationService.IsAuthorized("role:admin"))
+        {
+            return;
+        }
+
+        User? user = await GetUserInfoAsync(email);
+
+        if (user is null)
+        {
+            return;
+        }
+
+        user.IsBanned = isBanned;
 
         await mainDatabaseContext.SaveChangesAsync();
     }

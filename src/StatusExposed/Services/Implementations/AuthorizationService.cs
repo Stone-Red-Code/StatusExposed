@@ -14,7 +14,8 @@ public class AuthorizationService : IAuthorizationService
     public async Task<bool> IsAuthorized(string? requiredPermissions)
     {
         return await IsAuthorized(
-            requiredPermissions?.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            requiredPermissions?
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
             .Select(p => (Permission)p));
     }
 
@@ -22,7 +23,7 @@ public class AuthorizationService : IAuthorizationService
     {
         User? user = await authenticationService.GetUserAsync();
 
-        if (user is null || !user.IsVerified)
+        if (user is null || !user.IsVerified || user.IsBanned)
         {
             return false;
         }
