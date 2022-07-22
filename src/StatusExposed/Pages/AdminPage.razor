@@ -24,7 +24,7 @@
             <Validations StatusChanged="UserEmailValidationStatusChanged">
                 <Validation @ref="validation" Validator="ValidationRule.IsEmail">
                     <Field Margin="Margin.Is3.OnX.FromEnd">
-                        <FieldLabel>Check user</FieldLabel>
+                        <FieldLabel>Manage user</FieldLabel>
                         <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="userEmail" KeyDown="Enter_GetUserTextEdit" Disabled="userDataIsLoading">
                             <Feedback>
                                 <ValidationNone>Enter a E-mail.</ValidationNone>
