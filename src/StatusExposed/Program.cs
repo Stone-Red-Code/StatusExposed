@@ -24,8 +24,8 @@ builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSect
 builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddHostedService<ScheduledUpdateService>();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
-builder.Services.AddSingleton<IScheduledUpdateService, ScheduledUpdateService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
@@ -65,8 +65,6 @@ app.UseRouting();
 app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-
-app.Services.GetServices<IScheduledUpdateService>().First().Start(TimeSpan.FromMinutes(10));
 
 using IServiceScope scope = app.Services.CreateScope();
 using DatabaseContext? databaseCcontext = scope.ServiceProvider.GetService<DatabaseContext>();
