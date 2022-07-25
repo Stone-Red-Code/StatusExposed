@@ -6,7 +6,6 @@
 @inject IAuthenticationService AuthenticationService
 @inject IUserDataService UserDataService
 @inject IMessageService MessageService
-@inject NavigationManager NavigationManager
 
 <Protected>
     <Authorized>
@@ -14,85 +13,64 @@
         {
             <h3 class="mb-5 text-break">Hello, @user.Email</h3>
 
-            <Div Display="Display.Flex" Flex="Flex.Wrap.JustifyContent.Center">
+            <Div>
+                <Row Margin="Margin.Is0.FromStart">
+                    <Validations StatusChanged="ValidationStatusChanged">
+                        <Validation @ref="validation" Validator="CustomValidators.ValidateDomain">
+                            <Field Margin="Margin.Is3.OnX.FromEnd">
+                                <FieldLabel Class="h5">Subscribe to a site</FieldLabel>
+                                <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
+                                    <Feedback>
+                                        <ValidationNone>Enter a domain.</ValidationNone>
+                                        <ValidationSuccess>Domain is valid.</ValidationSuccess>
+                                        <ValidationError>Enter a valid domain!</ValidationError>
+                                    </Feedback>
+                                </TextEdit>
+                            </Field>
+                        </Validation>
+                    </Validations>
+                    <Span Margin="Margin.IsAuto.OnY">
+                        <Tooltip Text="Subscribe (Notifies you by E-mail when the status changes)">
+                            <Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button>
+                        </Tooltip>
+                    </Span>
+                </Row>
 
-                <Div>
-                    <Row Margin="Margin.Is0.FromStart">
-                        <Validations StatusChanged="ValidationStatusChanged">
-                            <Validation @ref="validation" Validator="CustomValidators.ValidateDomain">
-                                <Field Margin="Margin.Is3.OnX.FromEnd">
-                                    <FieldLabel Class="h5">Subscribe to a site</FieldLabel>
-                                    <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
-                                        <Feedback>
-                                            <ValidationNone>Enter a domain.</ValidationNone>
-                                            <ValidationSuccess>Domain is valid.</ValidationSuccess>
-                                            <ValidationError>Enter a valid domain!</ValidationError>
-                                        </Feedback>
-                                    </TextEdit>
-                                </Field>
-                            </Validation>
-                        </Validations>
-                        <Span Margin="Margin.IsAuto.OnY">
-                            <Tooltip Text="Subscribe (Notifies you by E-mail when the status changes)">
-                                <Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button>
-                            </Tooltip>
-                        </Span>
-                    </Row>
+                @if (subscibedServices is not null)
+                {
+                    <h5 class="mt-4">Subscribed sites (@subscibedServices.Count()/@siteSubscribtionsLimit)</h5>
 
-                    @if (subscibedServices is not null)
+                    if (subscibedServices.Count() == 0)
                     {
-                        <h5 class="mt-4">Subscribed sites (@subscibedServices.Count()/@siteSubscribtionsLimit)</h5>
-
-                        if (subscibedServices.Count() == 0)
-                        {
-                            <Paragraph TextColor="TextColor.White50">
-                                You are not subscribed to any sites yet.<br>
-                                Use the form above to subscribe to a website and receive notifications when the status of a website changes.
-                            </Paragraph>
-                        }
-
-                        <div class="services-list-table">
-                            <Table Border="Border.Dark">
-                                <TableBody>
-                                    @foreach (ServiceInformation serviceInformation in subscibedServices)
-                                    {
-                                        <TableRow>
-                                            <TableRowCell Class="align-middle" Style="width:20px;">
-                                                <Button Color="Color.Danger" Clicked="()=>Unsubscribe(serviceInformation.ServicePageDomain)">Unsubscribe</Button>
-                                            </TableRowCell>
-                                            <TableRowCell Class="align-middle" Style="width:5px;">
-                                                <StatusCircle Status="serviceInformation.CurrentStatus.Status" />
-                                            </TableRowCell>
-                                            <TableRowCell Class="align-middle" TextAlignment="TextAlignment.Start">
-                                                <Span>
-                                                    <a href="/status/@serviceInformation.ServicePageDomain.Replace('.', '/')" class="text-white">
-                                                        <Strong>@serviceInformation.ServicePageDomain</Strong>
-                                                    </a>
-                                                </Span>
-                                            </TableRowCell>
-                                        </TableRow>
-                                    }
-                                </TableBody>
-                            </Table>
-                        </div>
+                        <Paragraph TextColor="TextColor.White50">
+                            You are not subscribed to any sites yet.<br>
+                            Use the form above to subscribe to a website and receive notifications when the status of a website changes.
+                        </Paragraph>
                     }
-                </Div>
 
-                <Div Flex="Flex.Grow.Is1" Margin="Margin.Is4">
-                    <Card Class="default-background" Width="Width.Is100">
-                        <CardHeader>
-                            <p>Your permissions</p>
-                        </CardHeader>
-                        <CardBody>
-                            <ul>
-                                @foreach (Permission permission in user.Permissions)
-                                {
-                                    <li>@permission.Name</li>
-                                }
-                            </ul>
-                        </CardBody>
-                    </Card>
-                </Div>
+                    <Table FullWidth Border="Border.Dark">
+                        <TableBody>
+                            @foreach (ServiceInformation serviceInformation in subscibedServices)
+                            {
+                                <TableRow>
+                                    <TableRowCell Class="align-middle" Style="width:20px;">
+                                        <Button Color="Color.Danger" Clicked="()=>Unsubscribe(serviceInformation.ServicePageDomain)">Unsubscribe</Button>
+                                    </TableRowCell>
+                                    <TableRowCell Class="align-middle" Style="width:5px;">
+                                        <StatusCircle Status="serviceInformation.CurrentStatus.Status" />
+                                    </TableRowCell>
+                                    <TableRowCell Class="align-middle" TextAlignment="TextAlignment.Start">
+                                        <Span>
+                                            <a href="/status/@serviceInformation.ServicePageDomain.Replace('.', '/')" class="text-white">
+                                                <Strong>@serviceInformation.ServicePageDomain</Strong>
+                                            </a>
+                                        </Span>
+                                    </TableRowCell>
+                                </TableRow>
+                            }
+                        </TableBody>
+                    </Table>
+                }
             </Div>
 
             <Button Margin="Margin.Is5.FromTop" Color="Color.Danger" Clicked="DeleteAccount" Size="Size.Small">Delete Account</Button>
@@ -154,7 +132,7 @@
 
     private async Task DeleteAccount()
     {
-        if (await MessageService.Confirm("Do you really want to delete your account?<br>All off your data will be permanently deleted!", "Account Deletion!", (o) => o.CancelButtonText = "No, I'll give you another chance!"))
+        if (await MessageService.Confirm("Do you really want to delete your account?<br>All of your data will be permanently deleted!", "Account Deletion!", (o) => { o.CancelButtonText = "No, I'll give you another chance!"; o.ConfirmButtonColor = Color.Danger; }))
         {
             await AuthenticationService.DeleteRequestUserAsync();
             await MessageService.Error("We have sent you an account deletion E-mail!<br>You have been automatically logged out.", "Account Deletion!");

@@ -17,7 +17,7 @@
                 <Validation Validator="ValidationRule.IsEmail">
                     <Field>
                         <FieldLabel>Your E-mail</FieldLabel>
-                        <TextEdit Placeholder="example@example.com" @bind-Text="email" Disabled="isLoading" KeyDown="Enter" Autofocus="true">
+                        <TextEdit Role="TextRole.Email" Placeholder="example@example.com" @bind-Text="email" Disabled="isLoading" KeyDown="Enter" Autofocus="true">
                             <Feedback>
                                 <ValidationNone>Enter your E-mail.</ValidationNone>
                                 <ValidationSuccess>E-mail is valid.</ValidationSuccess>
