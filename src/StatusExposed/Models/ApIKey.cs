@@ -17,4 +17,21 @@ public class ApiKey
     public int UserId { get; set; }
     public User User { get; set; } = null!;
     public string Key { get; init; }
+
+    public override bool Equals(object? obj)
+    {
+        if (obj is ApiKey apiKey)
+        {
+            return Key == apiKey.Key;
+        }
+        else
+        {
+            return false;
+        }
+    }
+
+    public override int GetHashCode()
+    {
+        return Key.GetHashCode();
+    }
 }

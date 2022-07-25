@@ -4,7 +4,7 @@ public static class TokenGenerator
 {
     public static string GenerateToken(string tokenType, int uid = 0, int length = 128)
     {
-        return tokenType + "-" + SecureStringGenerator.CreateCryptographicRandomString(length, Convert.ToByte(uid));
+        return tokenType + "-" + SecureStringGenerator.CreateCryptographicRandomString(length, uid);
     }
 
     public static bool ValidateToken(string? token, string tokenType)

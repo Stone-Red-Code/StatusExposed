@@ -7,6 +7,7 @@
 @inject IAuthenticationService AuthenticationService
 @inject IUserDataService UserDataService
 @inject IMessageService MessageService
+@inject IClipboardService ClipboardService
 
 <Protected>
     <Authorized>
@@ -90,11 +91,11 @@
                             {
                                 <TableRow>
                                     <TableRowCell Class="align-middle" Style="width:20px;">
-                                        <Button Width="Width.Is100" Color="Color.Danger">Remove</Button>
+                                        <Button Clicked="()=>RemoveApiKey(apiKey)" Width="Width.Is100" Color="Color.Danger">Remove</Button>
                                     </TableRowCell>
                                     <TableRowCell Class="align-middle" Style="width:5px;">
                                         <Tooltip Text="Copy to clipboard!">
-                                            <span class="oi oi-external-link text-white shadow-none zoom" style="cursor: pointer;" @onclick="()=>Debug.WriteLine(apiKey.Key)" aria-hidden="true" />
+                                            <span class="oi oi-clipboard text-white shadow-none zoom" style="cursor: pointer;" @onclick="()=>ClipboardService.WriteTextAsync(apiKey.Key)" aria-hidden="true" />
                                         </Tooltip>
                                     </TableRowCell>
                                     <TableRowCell Class="align-middle" TextAlignment="TextAlignment.Start">
@@ -109,8 +110,8 @@
                                 <TableRowCell Class="align-middle" Style="width:20px;">
                                     <Button Clicked="GenerateApiKey" Color="Color.Primary">Generate</Button>
                                 </TableRowCell>
-                                <TableRowCell/>
-                                <TableRowCell/>
+                                <TableRowCell />
+                                <TableRowCell />
                             </TableRow>
                         </TableBody>
                     </Table>
@@ -144,7 +145,7 @@
         user = await AuthenticationService.GetUserAsync();
         subscibedServices = (await UserDataService.GetAllSubscribedServicesAsync())?.OrderByDescending(s => s.CurrentStatus.Status);
         siteSubscribtionsLimit = await UserDataService.GetSiteSubscribtionsLimitAsync();
-        apiKeys = await UserDataService.GetApiKeys();
+        apiKeys = await UserDataService.GetApiKeysAsync();
     }
 
     private async Task Subscribe()
@@ -178,7 +179,12 @@
 
     private async Task GenerateApiKey()
     {
-        await UserDataService.GenerateNewApiKey();
+        await UserDataService.GenerateNewApiKeyAsync();
+    }
+
+    private async Task RemoveApiKey(ApiKey apiKey)
+    {
+        await UserDataService.RemoveApiKeyAsync(apiKey);
     }
 
     private async Task DeleteAccount()

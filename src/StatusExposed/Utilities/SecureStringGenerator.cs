@@ -9,11 +9,11 @@ public static class SecureStringGenerator
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(count));
     }
 
-    public static string CreateCryptographicRandomString(int count, byte uid)
+    public static string CreateCryptographicRandomString(int count, int uid)
     {
         List<byte> bytes = RandomNumberGenerator.GetBytes(count).ToList();
 
-        bytes.Add(uid);
+        bytes.AddRange(BitConverter.GetBytes(uid));
 
         return Convert.ToBase64String(bytes.ToArray());
     }

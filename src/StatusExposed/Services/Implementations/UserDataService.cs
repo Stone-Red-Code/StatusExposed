@@ -105,7 +105,7 @@ public class UserDataService : IUserDataService
         return await Task.Run(() => 10);
     }
 
-    public async Task GenerateNewApiKey()
+    public async Task GenerateNewApiKeyAsync()
     {
         User? user = await authenticationService.GetUserAsync();
 
@@ -121,7 +121,21 @@ public class UserDataService : IUserDataService
         await mainDatabaseContext.SaveChangesAsync();
     }
 
-    public async Task<List<ApiKey>?> GetApiKeys()
+    public async Task RemoveApiKeyAsync(ApiKey apiKey)
+    {
+        User? user = await authenticationService.GetUserAsync();
+
+        if (user is null)
+        {
+            return;
+        }
+
+        user.ApiKeys.Remove(apiKey);
+
+        await mainDatabaseContext.SaveChangesAsync();
+    }
+
+    public async Task<List<ApiKey>?> GetApiKeysAsync()
     {
         User? user = await authenticationService.GetUserAsync();
 
