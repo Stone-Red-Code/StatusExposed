@@ -11,4 +11,8 @@ public interface IUserDataService
     Task<IEnumerable<ServiceInformation>?> GetAllSubscribedServicesAsync();
 
     Task<int> GetSiteSubscribtionsLimitAsync();
+
+    Task<ApiKey> GenerateNewApiKey();
+
+    Task<List<ApiKey>?> GetApiKeys();
 }

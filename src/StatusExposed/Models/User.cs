@@ -19,5 +19,7 @@ public class User
     public bool IsVerified { get; set; }
     public DateTime LastLoginDate { get; set; }
 
+    public List<ApiKey> ApIKeys { get; private set; } = new List<ApiKey>();
+
     public List<Permission> Permissions { get; init; } = new List<Permission>();
 }

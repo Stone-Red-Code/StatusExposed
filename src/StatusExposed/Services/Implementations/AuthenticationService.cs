@@ -37,7 +37,7 @@ public class AuthenticationService : IAuthenticationService
     {
         string? token = httpContextAccessor.HttpContext?.Request.Cookies["token"]?.ToString();
 
-        if (!IsValidToken(token))
+        if (!TokenGenerator.ValidateToken(token, "auth"))
         {
             return null;
         }
@@ -54,7 +54,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task RegisterUserAsync(string email)
     {
-        string mailToken = GenerateMailToken();
+        string mailToken = TokenGenerator.GenerateToken("mail");
 
         User user = new User(email)
         {
@@ -73,7 +73,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<bool> VerifyUserAsync(string mailToken)
     {
-        if (!mailToken.StartsWith("mail-"))
+        if (!TokenGenerator.ValidateToken(mailToken, "mail"))
         {
             return false;
         }
@@ -86,7 +86,7 @@ public class AuthenticationService : IAuthenticationService
         }
         else
         {
-            string newToken = SecureStringGenerator.CreateCryptographicRandomString(128);
+            string newToken = TokenGenerator.GenerateToken("auth", user.Id);
 
             user.LastLoginDate = DateTime.UtcNow;
             user.IsVerified = true;
@@ -102,14 +102,14 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task LoginUserAsync(string email)
     {
-        string mailToken = GenerateMailToken();
-
         User? user = await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
         if (user is null)
         {
             return;
         }
+
+        string mailToken = TokenGenerator.GenerateToken("mail", user.Id);
 
         user.LastLoginDate = DateTime.UtcNow;
         user.SessionToken = mailToken;
@@ -121,14 +121,14 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task DeleteRequestUserAsync()
     {
-        string deletionToken = GenerateDeletionToken();
-
         User? user = await GetUserAsync();
 
         if (user is null)
         {
             return;
         }
+
+        string deletionToken = TokenGenerator.GenerateToken("delete", user.Id);
 
         await LogoutUserAsync();
 
@@ -142,7 +142,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<bool> DeleteUserAsync(string deletionToken)
     {
-        if (!deletionToken.StartsWith("delete-"))
+        if (!TokenGenerator.ValidateToken(deletionToken, "delete"))
         {
             return false;
         }
@@ -178,7 +178,7 @@ public class AuthenticationService : IAuthenticationService
 
         await WriteCookieAsync("token", string.Empty, 0);
 
-        if (!IsValidToken(token))
+        if (!TokenGenerator.ValidateToken(token, "auth"))
         {
             return;
         }
@@ -203,26 +203,6 @@ public class AuthenticationService : IAuthenticationService
     private async Task WriteCookieAsync(string name, string value, int days)
     {
         _ = await jsRuntime.InvokeAsync<string>("blazorExtensions.WriteCookie", name, value, days);
-    }
-
-    private static string GenerateMailToken()
-    {
-        return "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
-    }
-
-    private static string GenerateDeletionToken()
-    {
-        return "delete-" + SecureStringGenerator.CreateCryptographicRandomString(64);
-    }
-
-    private static bool IsValidToken(string? token)
-    {
-        if (string.IsNullOrWhiteSpace(token) || token.StartsWith("mail-") || token.StartsWith("delete-"))
-        {
-            return false;
-        }
-
-        return true;
     }
 
     private async Task SendVerificationEmail(string email, string mailToken)

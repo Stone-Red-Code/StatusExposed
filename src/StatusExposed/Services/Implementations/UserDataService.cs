@@ -8,13 +8,11 @@ namespace StatusExposed.Services.Implementations;
 public class UserDataService : IUserDataService
 {
     private readonly DatabaseContext mainDatabaseContext;
-    private readonly ILogger<UserDataService> logger;
     private readonly IAuthenticationService authenticationService;
 
-    public UserDataService(DatabaseContext mainDatabaseContext, ILogger<UserDataService> logger, IAuthenticationService authenticationService)
+    public UserDataService(DatabaseContext mainDatabaseContext, IAuthenticationService authenticationService)
     {
         this.mainDatabaseContext = mainDatabaseContext;
-        this.logger = logger;
         this.authenticationService = authenticationService;
     }
 
@@ -92,7 +90,6 @@ public class UserDataService : IUserDataService
 
         if (user is null)
         {
-            logger.LogError("Anonymous can't retrieve a list of all subscribed sites!");
             return null;
         }
 
@@ -105,5 +102,17 @@ public class UserDataService : IUserDataService
     public async Task<int> GetSiteSubscribtionsLimitAsync()
     {
         return await Task.Run(() => 10);
+    }
+
+    public Task<ApiKey> GenerateNewApiKey()
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<List<ApiKey>?> GetApiKeys()
+    {
+        User? user = await authenticationService.GetUserAsync();
+
+        return user?.ApIKeys;
     }
 }

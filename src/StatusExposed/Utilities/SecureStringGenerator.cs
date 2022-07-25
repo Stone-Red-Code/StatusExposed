@@ -8,4 +8,13 @@ public static class SecureStringGenerator
     {
         return Convert.ToBase64String(RandomNumberGenerator.GetBytes(count));
     }
+
+    public static string CreateCryptographicRandomString(int count, byte uid)
+    {
+        List<byte> bytes = RandomNumberGenerator.GetBytes(count).ToList();
+
+        bytes.Add(uid);
+
+        return Convert.ToBase64String(bytes.ToArray());
+    }
 }
