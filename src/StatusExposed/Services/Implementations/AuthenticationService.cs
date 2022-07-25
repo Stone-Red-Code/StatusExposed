@@ -42,7 +42,10 @@ public class AuthenticationService : IAuthenticationService
             return null;
         }
 
-        User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.SessionToken == token);
+        User? user = await mainDatabaseContext.Users
+            .Include(u => u.Permissions)
+            .Include(u => u.ApiKeys)
+            .FirstOrDefaultAsync(u => u.SessionToken == token);
 
         if (user is null || DateTime.UtcNow - user.LastLoginDate > TimeSpan.FromDays(7))
         {

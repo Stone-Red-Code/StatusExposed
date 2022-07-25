@@ -2,9 +2,9 @@
 
 public static class TokenGenerator
 {
-    public static string GenerateToken(string tokenType, int uid = 0)
+    public static string GenerateToken(string tokenType, int uid = 0, int length = 128)
     {
-        return tokenType + "-" + SecureStringGenerator.CreateCryptographicRandomString(128, Convert.ToByte(uid));
+        return tokenType + "-" + SecureStringGenerator.CreateCryptographicRandomString(length, Convert.ToByte(uid));
     }
 
     public static bool ValidateToken(string? token, string tokenType)

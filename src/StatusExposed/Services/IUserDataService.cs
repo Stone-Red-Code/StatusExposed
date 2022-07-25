@@ -12,7 +12,7 @@ public interface IUserDataService
 
     Task<int> GetSiteSubscribtionsLimitAsync();
 
-    Task<ApiKey> GenerateNewApiKey();
+    Task GenerateNewApiKey();
 
     Task<List<ApiKey>?> GetApiKeys();
 }

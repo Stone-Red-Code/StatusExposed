@@ -2,6 +2,7 @@
 @using StatusExposed.Models
 @using StatusExposed.Services
 @using StatusExposed.Utilities
+@using System.Diagnostics
 
 @inject IAuthenticationService AuthenticationService
 @inject IUserDataService UserDataService
@@ -48,7 +49,7 @@
                         </Paragraph>
                     }
 
-                    <Table FullWidth Border="Border.Dark">
+                    <Table FullWidth Border="Border.Dark" Class="services-list-table" Responsive>
                         <TableBody>
                             @foreach (ServiceInformation serviceInformation in subscibedServices)
                             {
@@ -71,6 +72,49 @@
                         </TableBody>
                     </Table>
                 }
+
+                @if (apiKeys is not null)
+                {
+                    <h5 class="mt-4">API keys</h5>
+
+                    if (apiKeys.Count() == 0)
+                    {
+                        <Paragraph TextColor="TextColor.White50">
+                            You don't have any API keys yet.
+                        </Paragraph>
+                    }
+
+                    <Table FullWidth Border="Border.Dark" Class="services-list-table" Responsive>
+                        <TableBody>
+                            @foreach (ApiKey apiKey in apiKeys)
+                            {
+                                <TableRow>
+                                    <TableRowCell Class="align-middle" Style="width:20px;">
+                                        <Button Width="Width.Is100" Color="Color.Danger">Remove</Button>
+                                    </TableRowCell>
+                                    <TableRowCell Class="align-middle" Style="width:5px;">
+                                        <Tooltip Text="Copy to clipboard!">
+                                            <span class="oi oi-external-link text-white shadow-none zoom" style="cursor: pointer;" @onclick="()=>Debug.WriteLine(apiKey.Key)" aria-hidden="true" />
+                                        </Tooltip>
+                                    </TableRowCell>
+                                    <TableRowCell Class="align-middle" TextAlignment="TextAlignment.Start">
+                                        <Span TextColor="TextColor.White">
+                                            <Strong>@apiKey.Key[0..10]...</Strong>
+                                        </Span>
+                                    </TableRowCell>
+                                </TableRow>
+                            }
+
+                            <TableRow>
+                                <TableRowCell Class="align-middle" Style="width:20px;">
+                                    <Button Clicked="GenerateApiKey" Color="Color.Primary">Generate</Button>
+                                </TableRowCell>
+                                <TableRowCell/>
+                                <TableRowCell/>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                }
             </Div>
 
             <Button Margin="Margin.Is5.FromTop" Color="Color.Danger" Clicked="DeleteAccount" Size="Size.Small">Delete Account</Button>
@@ -87,6 +131,7 @@
 
     private User? user;
     private IEnumerable<ServiceInformation>? subscibedServices;
+    private IEnumerable<ApiKey>? apiKeys;
     private int siteSubscribtionsLimit;
 
     private bool isValid;
@@ -99,6 +144,7 @@
         user = await AuthenticationService.GetUserAsync();
         subscibedServices = (await UserDataService.GetAllSubscribedServicesAsync())?.OrderByDescending(s => s.CurrentStatus.Status);
         siteSubscribtionsLimit = await UserDataService.GetSiteSubscribtionsLimitAsync();
+        apiKeys = await UserDataService.GetApiKeys();
     }
 
     private async Task Subscribe()
@@ -128,6 +174,11 @@
     private async Task Unsubscribe(string domain)
     {
         await UserDataService.UnsubscribeFromServiceAsync(domain);
+    }
+
+    private async Task GenerateApiKey()
+    {
+        await UserDataService.GenerateNewApiKey();
     }
 
     private async Task DeleteAccount()

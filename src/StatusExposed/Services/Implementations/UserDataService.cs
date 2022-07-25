@@ -2,6 +2,7 @@
 
 using StatusExposed.Database;
 using StatusExposed.Models;
+using StatusExposed.Utilities;
 
 namespace StatusExposed.Services.Implementations;
 
@@ -104,15 +105,26 @@ public class UserDataService : IUserDataService
         return await Task.Run(() => 10);
     }
 
-    public Task<ApiKey> GenerateNewApiKey()
+    public async Task GenerateNewApiKey()
     {
-        throw new NotImplementedException();
+        User? user = await authenticationService.GetUserAsync();
+
+        if (user is null)
+        {
+            return;
+        }
+
+        ApiKey apiKey = new ApiKey(TokenGenerator.GenerateToken("api", user.Id, 64));
+
+        user.ApiKeys.Add(apiKey);
+
+        await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task<List<ApiKey>?> GetApiKeys()
     {
         User? user = await authenticationService.GetUserAsync();
 
-        return user?.ApIKeys;
+        return user?.ApiKeys;
     }
 }
