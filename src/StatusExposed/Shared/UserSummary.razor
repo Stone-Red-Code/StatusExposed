@@ -1,0 +1,123 @@
+﻿@using StatusExposed.Models
+@using StatusExposed.Services
+@using StatusExposed.Utilities
+
+@inject IAdminDataService AdminDataService
+
+@if (User is not null)
+{
+    <p>
+        Id: @User.Id
+        <br />
+        E-mail: @User.Email
+        <br />
+        Verified: @User.IsVerified
+        <br />
+        Last login date: @User.LastLoginDate
+        <br />
+        Permissions:
+        <Table Border="Border.Dark" Responsive>
+            <TableBody>
+                @foreach (Permission permission in User.Permissions)
+                {
+                    <TableRow>
+                        <TableRowCell Style="width:20px;">
+                            <Button Color="Color.Danger" Clicked="()=>RemovePermission(permission.Name)">Remove</Button>
+                        </TableRowCell>
+                        <TableRowCell TextAlignment="TextAlignment.Start" VerticalAlignment="VerticalAlignment.Middle" TextColor="TextColor.White">
+                            @permission.Name
+                        </TableRowCell>
+                    </TableRow>
+                }
+
+                <TableRow>
+                    <TableRowCell Style="width:20px;">
+                        <Button Width="Width.Is100" Color="Color.Primary" Clicked="AddPermission" Disabled="!newPermissionIsValid || newPermissionLoading">Add</Button>
+                    </TableRowCell>
+                    <TableRowCell>
+                        <Validations StatusChanged="NewRoleValidationStatusChanged">
+                            <Validation @ref="permissionValidation" Validator="CustomValidators.ValidatePermission">
+                                <TextEdit Placeholder="<type>:<value>" @bind-Text="newPermission" KeyDown="Enter_NewRoleTextEdit" Disabled="newPermissionLoading">
+                                    <Feedback>
+                                        <ValidationNone>Enter a permission.</ValidationNone>
+                                        <ValidationSuccess>Permission is valid.</ValidationSuccess>
+                                        <ValidationError>Invalid permission format!</ValidationError>
+                                    </Feedback>
+                                </TextEdit>
+                            </Validation>
+                        </Validations>
+                    </TableRowCell>
+                </TableRow>
+            </TableBody>
+        </Table>
+
+        @if (User.IsBanned)
+        {
+            <Button Color="Color.Danger" Clicked="SetUserBan">Unban user</Button>
+        }
+        else
+        {
+            <Button Color="Color.Danger" Clicked="SetUserBan">Ban user</Button>
+        }
+    </p>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public User? User { get; set; }
+
+    Validation permissionValidation = null!;
+
+    string? newPermission;
+    bool newPermissionIsValid;
+    bool newPermissionLoading;
+
+    private async Task AddPermission()
+    {
+        if (newPermission is null || User is null || !newPermissionIsValid || newPermissionLoading)
+        {
+            return;
+        }
+
+        newPermissionLoading = true;
+
+        await AdminDataService.AddPermissionToUserAsync(User.Email, newPermission.Replace(' ', '_'));
+
+        newPermission = null;
+        permissionValidation.NotifyValidationStatusChanged(ValidationStatus.Error);
+        newPermissionLoading = false;
+    }
+
+    private async Task RemovePermission(string permission)
+    {
+        if (User is null)
+        {
+            return;
+        }
+
+        await AdminDataService.RemovePermissionFromUserAsync(User.Email, permission);
+    }
+
+    private async Task SetUserBan()
+    {
+        if (User is null)
+        {
+            return;
+        }
+
+        await AdminDataService.SetUserBan(User.Email, !User.IsBanned);
+    }
+
+    private void NewRoleValidationStatusChanged(ValidationsStatusChangedEventArgs e)
+    {
+        newPermissionIsValid = e.Status != ValidationStatus.Error;
+    }
+
+    public async Task Enter_NewRoleTextEdit(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await AddPermission();
+        }
+    }
+}

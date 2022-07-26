@@ -1,14 +1,45 @@
 ﻿@page "/admin"
+@using StatusExposed.Models
+@using StatusExposed.Services
+
+@inject IAdminDataService AdminDataService
 
 <HeadContent>
     <meta name="robots" content="noindex">
 </HeadContent>
 
-
-
 <Protected RequiredPermissions="role:admin" UseLoadingScreen="true">
     <Authorized>
-        <h3>AdminPage</h3>
+        <h3 class="mb-3">Statistics</h3>
+        <p>
+            Verified users: @verifiedUsersCount<br />
+            Unverified users: @notVerifiedUsersCount<br />
+            Total users: @usersCount<br />
+        </p>
+        <p>Services: @servicesCount</p>
+
+        <h3 class="mb-3 mt-5">Management</h3>
+
+        <Row Margin="Margin.Is0.FromStart">
+            <Validations StatusChanged="UserEmailValidationStatusChanged">
+                <Validation @ref="validation" Validator="ValidationRule.IsEmail">
+                    <Field Margin="Margin.Is3.OnX.FromEnd">
+                        <FieldLabel>Manage user</FieldLabel>
+                        <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="userEmail" KeyDown="Enter_GetUserTextEdit" Disabled="userDataIsLoading">
+                            <Feedback>
+                                <ValidationNone>Enter a E-mail.</ValidationNone>
+                                <ValidationSuccess>E-mail is valid.</ValidationSuccess>
+                                <ValidationError>Enter a valid E-mail!</ValidationError>
+                            </Feedback>
+                        </TextEdit>
+                    </Field>
+                </Validation>
+            </Validations>
+            <Span Margin="Margin.IsAuto.OnY"><Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="GetUser" Disabled="!userEmailIsValid || userDataIsLoading" Loading="userDataIsLoading">Check</Button></Span>
+        </Row>
+
+       <UserSummary User="user"/>
+
     </Authorized>
     <NotAuthorized>
         Sorry, you don't have the required permissions to see this.
@@ -16,5 +47,58 @@
 </Protected>
 
 @code {
+
+    private int usersCount;
+    private int verifiedUsersCount;
+    private int notVerifiedUsersCount;
+    private int servicesCount;
+
+    private User? user;
+    private string? userEmail;
+    private bool userDataIsLoading;
+    private bool userEmailIsValid;
+
+    private Validation validation = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        usersCount = await AdminDataService.GetAmountOfUsersAsync();
+        verifiedUsersCount = await AdminDataService.GetAmountOfUsersAsync(true);
+        notVerifiedUsersCount = await AdminDataService.GetAmountOfUsersAsync(false);
+        servicesCount = await AdminDataService.GetAmountOfServicesAsync();
+    }
+
+    private async Task GetUser()
+    {
+        if (userEmail is null || !userEmailIsValid || userDataIsLoading)
+        {
+            return;
+        }
+
+        userDataIsLoading = true;
+        StateHasChanged();
+
+        user = await AdminDataService.GetUserInfoAsync(userEmail);
+
+        if (user is null)
+        {
+            validation.NotifyValidationStatusChanged(ValidationStatus.Error, new[] { "User not found!" });
+        }
+
+        userDataIsLoading = false;
+    }
+
+    private void UserEmailValidationStatusChanged(ValidationsStatusChangedEventArgs e)
+    {
+        userEmailIsValid = e.Status != ValidationStatus.Error;
+    }
+
+    public async Task Enter_GetUserTextEdit(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            await GetUser();
+        }
+    }
 
 }

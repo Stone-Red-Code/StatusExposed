@@ -26,6 +26,7 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddHostedService<ScheduledUpdateService>();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
+builder.Services.AddScoped<IAdminDataService, AdminDataService>();
 builder.Services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
 builder.Services.AddScoped<IUserRateLimitingService, UserRateLimitingService>();
 builder.Services.AddScoped<IStatusService, StatusService>();

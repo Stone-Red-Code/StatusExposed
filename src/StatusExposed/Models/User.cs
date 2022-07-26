@@ -17,6 +17,7 @@ public class User
     public string Email { get; set; }
     public string? SessionToken { get; set; }
     public bool IsVerified { get; set; }
+    public bool IsBanned { get; set; }
     public DateTime LastLoginDate { get; set; }
 
     public List<ApiKey> ApiKeys { get; private set; } = new List<ApiKey>();

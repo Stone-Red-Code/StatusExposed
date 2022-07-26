@@ -47,7 +47,7 @@ public class AuthenticationService : IAuthenticationService
             .Include(u => u.ApiKeys)
             .FirstOrDefaultAsync(u => u.SessionToken == token);
 
-        if (user is null || DateTime.UtcNow - user.LastLoginDate > TimeSpan.FromDays(7))
+        if (user is null || user.IsBanned || DateTime.UtcNow - user.LastLoginDate > TimeSpan.FromDays(7))
         {
             return null;
         }
@@ -103,13 +103,27 @@ public class AuthenticationService : IAuthenticationService
         }
     }
 
-    public async Task LoginUserAsync(string email)
+    public async Task<(bool Success, string? Message)> LoginUserAsync(string email)
     {
-        User? user = await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.Email == email);
+        string mailToken = GenerateMailToken();
+
+        User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
 
         if (user is null)
         {
-            return;
+            return (false, null);
+        }
+
+        if (user.IsBanned)
+        {
+            string? banReason = user.Permissions.FirstOrDefault(p => p.Name.StartsWith("banreason:"))?.Name;
+
+            if (!string.IsNullOrWhiteSpace(banReason))
+            {
+                return (false, $"Ban reason: {banReason.Split(':')[1]}");
+            }
+
+            return (false, null);
         }
 
         string mailToken = TokenGenerator.GenerateToken("mail", user.Id);
@@ -120,6 +134,8 @@ public class AuthenticationService : IAuthenticationService
         await SendVerificationEmail(email, mailToken);
 
         await mainDatabaseContext.SaveChangesAsync();
+
+        return (true, null);
     }
 
     public async Task DeleteRequestUserAsync()
