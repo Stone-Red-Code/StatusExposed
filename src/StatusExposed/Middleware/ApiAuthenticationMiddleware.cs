@@ -31,7 +31,8 @@ public class ApiAuthenticationMiddleware
 
             User? user = await mainDatabaseContext.Users
                  .Include(u => u.ApiKeys)
-                 .FirstOrDefaultAsync(u => u.ApiKeys.Any(a => a.Key == parts.Last()));
+                 .FirstOrDefaultAsync(u => u.ApiKeys
+                 .Any(a => a.Key == parts.Last()));
 
             if (user is not null)
             {

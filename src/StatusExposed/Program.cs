@@ -26,9 +26,10 @@ builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddHostedService<ScheduledUpdateService>();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
+builder.Services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
+builder.Services.AddScoped<IUserRateLimitingService, UserRateLimitingService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUserDataService, UserDataService>();
 builder.Services.AddTransient<IClipboardService, ClipboardService>();
@@ -67,18 +68,18 @@ app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
 using IServiceScope scope = app.Services.CreateScope();
-using DatabaseContext? databaseCcontext = scope.ServiceProvider.GetService<DatabaseContext>();
+using DatabaseContext databaseCcontext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
-ILogger? logger = scope.ServiceProvider.GetService<ILogger>();
-if (databaseCcontext?.Database.EnsureCreated() == true)
+ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+if (databaseCcontext.Database.EnsureCreated())
 {
-    logger?.LogInformation("Automatically created database because it didn't exist.");
+    logger.LogInformation("Automatically created database because it didn't exist.");
 }
 
-// get the ClientPolicyStore instance
 IClientPolicyStore clientPolicyStore = scope.ServiceProvider.GetRequiredService<IClientPolicyStore>();
-
-// seed client data from appsettings
 await clientPolicyStore.SeedAsync();
+
+IUserRateLimitingService userRateLimitingService = scope.ServiceProvider.GetRequiredService<IUserRateLimitingService>();
+await userRateLimitingService.LoadAllAsync();
 
 app.Run();

@@ -54,7 +54,7 @@ public class ScheduledUpdateService : IHostedService
         do
         {
             // Request services in chunks
-            statusInformations = statusService.GetStatuses(count * 100, count * 100 + 100);
+            statusInformations = statusService.GetStatuses(count * 1000, 1000);
 
             foreach (string servicePageDomain in statusInformations.Select(s => s.ServicePageDomain))
             {
