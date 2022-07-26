@@ -53,7 +53,7 @@ public class UserRateLimitingService : IUserRateLimitingService
                     RateLimitRule rateLimitRule = new RateLimitRule()
                     {
                         Endpoint = generalRule.Endpoint,
-                        Limit = generalRule.Limit,
+                        Limit = generalRule.Limit * 2,
                         MonitorMode = generalRule.MonitorMode,
                         Period = generalRule.Period,
                         PeriodTimespan = generalRule.PeriodTimespan,
