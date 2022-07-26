@@ -24,15 +24,16 @@ builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSect
 builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddHostedService<ScheduledUpdateService>();
 builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
-builder.Services.AddSingleton<IScheduledUpdateService, ScheduledUpdateService>();
+builder.Services.AddScoped<IAdminDataService, AdminDataService>();
 builder.Services.AddSingleton<IRateLimitConfiguration, CustomRateLimitConfiguration>();
+builder.Services.AddScoped<IUserRateLimitingService, UserRateLimitingService>();
 builder.Services.AddScoped<IStatusService, StatusService>();
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
-builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUserDataService, UserDataService>();
-builder.Services.AddScoped<IAdminDataService, AdminDataService>();
+builder.Services.AddTransient<IClipboardService, ClipboardService>();
 builder.Services.AddDbContext<DatabaseContext>();
 builder.Services.AddBlazorise(options => { options.Immediate = true; });
 builder.Services.AddBootstrapProviders();
@@ -67,21 +68,19 @@ app.MapControllers();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
-app.Services.GetServices<IScheduledUpdateService>().First().Start(TimeSpan.FromMinutes(10));
-
 using IServiceScope scope = app.Services.CreateScope();
-using DatabaseContext? databaseCcontext = scope.ServiceProvider.GetService<DatabaseContext>();
+using DatabaseContext databaseCcontext = scope.ServiceProvider.GetRequiredService<DatabaseContext>();
 
-ILogger? logger = scope.ServiceProvider.GetService<ILogger>();
-if (databaseCcontext?.Database.EnsureCreated() == true)
+ILogger logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+if (databaseCcontext.Database.EnsureCreated())
 {
-    logger?.LogInformation("Automatically created database because it didn't exist.");
+    logger.LogInformation("Automatically created database because it didn't exist.");
 }
 
-// get the ClientPolicyStore instance
 IClientPolicyStore clientPolicyStore = scope.ServiceProvider.GetRequiredService<IClientPolicyStore>();
-
-// seed client data from appsettings
 await clientPolicyStore.SeedAsync();
+
+IUserRateLimitingService userRateLimitingService = scope.ServiceProvider.GetRequiredService<IUserRateLimitingService>();
+await userRateLimitingService.LoadAllAsync();
 
 app.Run();

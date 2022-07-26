@@ -6,6 +6,7 @@
 @using StatusExposed.Services
 
 @inject IAuthenticationService AuthenticationService
+@inject IConfiguration Configuration
 
 @inject NavigationManager NavigationManager
 
@@ -16,17 +17,29 @@
             <Validations StatusChanged="ValidationStatusChanged">
                 <Validation Validator="ValidationRule.IsEmail">
                     <Field>
-                        <FieldLabel>Your E-Mail</FieldLabel>
-                        <TextEdit Placeholder="example@example.com" @bind-Text="email" Disabled="isLoading" KeyDown="Enter" Autofocus="true">
+                        <FieldLabel>Your E-mail</FieldLabel>
+                        <TextEdit Role="TextRole.Email" Placeholder="example@example.com" @bind-Text="email" Disabled="isLoading" KeyDown="Enter" Autofocus="true">
                             <Feedback>
-                                <ValidationNone>Enter your E-Mail.</ValidationNone>
-                                <ValidationSuccess>E-Mail is valid.</ValidationSuccess>
-                                <ValidationError>Enter a valid E-Mail!</ValidationError>
+                                <ValidationNone>Enter your E-mail.</ValidationNone>
+                                <ValidationSuccess>E-mail is valid.</ValidationSuccess>
+                                <ValidationError>Enter a valid E-mail!</ValidationError>
                             </Feedback>
                         </TextEdit>
                     </Field>
                 </Validation>
-                <Button Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Log In/Create Account</Button>
+                @if (File.Exists(Configuration["LegalNotePath"]))
+                {
+                    <Validation Validator="ValidationRule.IsChecked">
+                        <Check TValue="bool" Disabled="isLoading">
+                            <ChildContent>
+                                <Span TextColor="TextColor.Light">
+                                    I accept the <a style="text-decoration: underline;" class="text-light" href="/legal">privacy policy and TOS</a>
+                                </Span>
+                            </ChildContent>
+                        </Check>
+                    </Validation>
+                }
+                <Button Margin="Margin.Is3.FromTop" Color="Color.Primary" Clicked="@Submit" Disabled="!isValid || isLoading" Loading="@isLoading">Log In/Create Account</Button>
             </Validations>
         }
 
@@ -79,7 +92,9 @@
         }
 
         isLoading = true;
+
         infoText = "Processing information...";
+
         StateHasChanged();
 
         if (await AuthenticationService.UserExistsAsync(email))

@@ -1,4 +1,4 @@
-﻿@page "/logout"
+﻿@page "/logout/{*DeletionToken}"
 
 @using System.Text.RegularExpressions
 @using StatusExposed.Services
@@ -7,11 +7,40 @@
 
 @inject NavigationManager NavigationManager
 
+<div class="control-section centerArea">
+    <div class="text-center">
+        <h1>@infoText</h1>
+    </div>
+</div>
+
 @code {
+
+    [Parameter]
+    public string? DeletionToken { get; set; }
+
+    private string? infoText;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await AuthenticationService.LogoutUserAsync();
-        NavigationManager.NavigateTo("/", true);
+        if (!string.IsNullOrWhiteSpace(DeletionToken) && firstRender)
+        {
+            bool success = await AuthenticationService.DeleteUserAsync(DeletionToken);
+
+            if (!success)
+            {
+                infoText = "Deletion token is not valid!";
+                StateHasChanged();
+            }
+            else
+            {
+                infoText = "Account deleted!";
+                StateHasChanged();
+            }
+        }
+        else if (firstRender)
+        {
+            NavigationManager.NavigateTo("/", true);
+            await AuthenticationService.LogoutUserAsync();
+        }
     }
 }

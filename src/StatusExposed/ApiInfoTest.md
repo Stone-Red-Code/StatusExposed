@@ -70,3 +70,14 @@
 ```
 github.com is not tracked
 ```
+
+---
+
+**Condition** : If rate limit exceeded.
+
+**Code**: `429 TOO MANY REQUESTS`
+
+**Content example**: 
+```
+API calls quota exceeded! maximum admitted 10 per 1m.
+```

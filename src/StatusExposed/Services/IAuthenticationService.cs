@@ -14,7 +14,9 @@ public interface IAuthenticationService
 
     Task<bool> VerifyUserAsync(string mailToken);
 
-    Task DeleteUserAsync();
+    Task DeleteRequestUserAsync();
+
+    Task<bool> DeleteUserAsync(string deletionToken);
 
     Task<bool> UserExistsAsync(string email);
 
