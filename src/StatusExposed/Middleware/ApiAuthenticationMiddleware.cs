@@ -14,7 +14,7 @@ public class ApiAuthenticationMiddleware
         this.next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, DatabaseContext mainDatabaseContext, ILogger<ApiAuthenticationMiddleware> logger)
+    public async Task InvokeAsync(HttpContext context, DatabaseContext mainDatabaseContext)
     {
         if (context.Request.Headers.ContainsKey("X-ClientId"))
         {
@@ -22,8 +22,6 @@ public class ApiAuthenticationMiddleware
         }
 
         string? authorizationText = context.Request.Headers.Authorization.FirstOrDefault();
-
-        logger.LogDebug("Authorization text: {key}", authorizationText);
 
         if (authorizationText is not null)
         {
@@ -36,13 +34,7 @@ public class ApiAuthenticationMiddleware
 
             if (user is not null)
             {
-                logger.LogDebug("User name: {name}", user.Email);
-
                 context.Request.Headers.Add("X-ClientId", user.Id.ToString());
-            }
-            else
-            {
-                logger.LogDebug("Invalid authorization token.");
             }
         }
 

@@ -1,71 +1,61 @@
-﻿using StatusExposed.Models;
-
-namespace StatusExposed.Services.Implementations;
+﻿namespace StatusExposed.Services.Implementations;
 
 public class ScheduledUpdateService : IHostedService
 {
     private readonly ILogger logger;
     private readonly IServiceScopeFactory serviceScopeFactory;
     private readonly IConfiguration configuration;
-    private readonly System.Timers.Timer timer;
+    private Timer? timer;
 
     public ScheduledUpdateService(ILogger<ScheduledUpdateService> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration configuration)
     {
         this.logger = logger;
         this.serviceScopeFactory = serviceScopeFactory;
         this.configuration = configuration;
-        timer = new System.Timers.Timer();
-        timer.Elapsed += async (o, e) => await UpdateServices();
     }
 
-    public async Task StartAsync(CancellationToken cancellationToken)
+    public Task StartAsync(CancellationToken cancellationToken)
     {
-        timer.Start();
-        await UpdateServices();
+        timer = new Timer((_) => UpdateServices(), null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        timer.Stop();
+        timer?.Change(Timeout.Infinite, 0);
         return Task.CompletedTask;
     }
 
-    private async Task UpdateServices()
+    private void UpdateServices()
     {
         if (!configuration.GetValue<bool>("AutomaticUpdates"))
         {
             return;
         }
 
-        timer.Enabled = false;
+        using IServiceScope scope = serviceScopeFactory.CreateScope();
+        IStatusService statusService = scope.ServiceProvider.GetRequiredService<IStatusService>();
 
-        using IServiceScope? scope = serviceScopeFactory.CreateScope();
-        IStatusService? statusService = scope.ServiceProvider.GetService<IStatusService>();
-
-        if (statusService is null)
-        {
-            logger.LogError("Cannot find status service!");
-            return;
-        }
-
-        IEnumerable<ServiceInformation> statusInformations;
+        IEnumerable<string> domains;
         int count = 0;
 
         do
         {
             // Request services in chunks
-            statusInformations = statusService.GetStatuses(count * 1000, 1000);
+            domains = statusService
+                .GetStatuses(count * 1000, 1000)
+                .Select(s => s.ServicePageDomain);
 
-            foreach (string servicePageDomain in statusInformations.Select(s => s.ServicePageDomain))
+            Parallel.ForEach(domains, async (domain) =>
             {
-                logger.LogDebug("Updating {domain} ...", servicePageDomain);
-                await statusService.UpdateStatusAsync(servicePageDomain);
-                logger.LogDebug("Updated: {domain}", servicePageDomain);
-            }
+                logger.LogDebug("Updating {domain} ...", domain);
+                using IServiceScope scope = serviceScopeFactory.CreateScope();
+                IStatusService statusService = scope.ServiceProvider.GetRequiredService<IStatusService>();
+                await statusService.UpdateStatusAsync(domain);
+                logger.LogDebug("Updated: {domain}", domain);
+            });
             count++;
         }
-        while (statusInformations.Any());
-
-        timer.Enabled = true;
+        while (domains.Any());
     }
 }
