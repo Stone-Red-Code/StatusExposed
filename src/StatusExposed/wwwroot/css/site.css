@@ -2,6 +2,7 @@
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    height: auto;
 }
 
     body, body > * {
@@ -182,5 +183,9 @@ blockquote p {
     .status-card {
         background-color: #062137;
         min-width: 100%;
+    }
+
+    html, body {
+        height: 100%;
     }
 }
