@@ -157,7 +157,6 @@ blockquote p {
 }
 
 .services-list-table {
-    width: 60vw;
     overflow-x: scroll;
 }
 
@@ -183,9 +182,5 @@ blockquote p {
     .status-card {
         background-color: #062137;
         min-width: 100%;
-    }
-
-    .services-list-table {
-        width: 90vw;
     }
 }

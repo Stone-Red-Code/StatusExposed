@@ -1,5 +1,7 @@
-﻿using StatusExposed.Models;
-using StatusExposed.Services;
+﻿using Microsoft.EntityFrameworkCore;
+
+using StatusExposed.Database;
+using StatusExposed.Models;
 
 namespace StatusExposed.Middleware;
 
@@ -12,22 +14,35 @@ public class ApiAuthenticationMiddleware
         this.next = next;
     }
 
-    public async Task InvokeAsync(HttpContext context, IAuthenticationService authenticationService, ILogger<ApiAuthenticationMiddleware> logger)
+    public async Task InvokeAsync(HttpContext context, DatabaseContext mainDatabaseContext, ILogger<ApiAuthenticationMiddleware> logger)
     {
         if (context.Request.Headers.ContainsKey("X-ClientId"))
         {
-            context.Response.Headers.Remove("X-ClientId");
+            context.Request.Headers.Remove("X-ClientId");
         }
 
-        if (await authenticationService.IsAuthenticated())
+        string? authorizationText = context.Request.Headers.Authorization.FirstOrDefault();
+
+        logger.LogDebug("Authorization text: {key}", authorizationText);
+
+        if (authorizationText is not null)
         {
-            User user = (await authenticationService.GetUserAsync())!;
+            string[] parts = authorizationText.Split(' ');
 
-            Permission? permission = user.Permissions.FirstOrDefault(p => p.Name.StartsWith("api"));
+            User? user = await mainDatabaseContext.Users
+                 .Include(u => u.ApiKeys)
+                 .FirstOrDefaultAsync(u => u.ApiKeys
+                 .Any(a => a.Key == parts.Last()));
 
-            if (permission is not null)
+            if (user is not null)
             {
-                context.Request.Headers.Add("X-ClientId", permission.Name);
+                logger.LogDebug("User name: {name}", user.Email);
+
+                context.Request.Headers.Add("X-ClientId", user.Id.ToString());
+            }
+            else
+            {
+                logger.LogDebug("Invalid authorization token.");
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace StatusExposed.Services.Implementations;
 
-public class ScheduledUpdateService : IScheduledUpdateService
+public class ScheduledUpdateService : IHostedService
 {
     private readonly ILogger logger;
     private readonly IServiceScopeFactory serviceScopeFactory;
@@ -15,22 +15,22 @@ public class ScheduledUpdateService : IScheduledUpdateService
         this.serviceScopeFactory = serviceScopeFactory;
         this.configuration = configuration;
         timer = new System.Timers.Timer();
-        timer.Elapsed += Timer_Elapsed;
+        timer.Elapsed += async (o, e) => await UpdateServices();
     }
 
-    public void Start(TimeSpan updateRate)
+    public async Task StartAsync(CancellationToken cancellationToken)
     {
-        timer.Interval = updateRate.TotalMilliseconds;
         timer.Start();
-        Timer_Elapsed(timer, null!);
+        await UpdateServices();
     }
 
-    public void Stop()
+    public Task StopAsync(CancellationToken cancellationToken)
     {
         timer.Stop();
+        return Task.CompletedTask;
     }
 
-    private async void Timer_Elapsed(object? sender, System.Timers.ElapsedEventArgs e)
+    private async Task UpdateServices()
     {
         if (!configuration.GetValue<bool>("AutomaticUpdates"))
         {
@@ -54,7 +54,7 @@ public class ScheduledUpdateService : IScheduledUpdateService
         do
         {
             // Request services in chunks
-            statusInformations = statusService.GetStatuses(count * 100, count * 100 + 100);
+            statusInformations = statusService.GetStatuses(count * 1000, 1000);
 
             foreach (string servicePageDomain in statusInformations.Select(s => s.ServicePageDomain))
             {

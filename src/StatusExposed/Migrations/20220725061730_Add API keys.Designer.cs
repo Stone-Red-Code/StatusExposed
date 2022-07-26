@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using StatusExposed.Database;
 
@@ -10,9 +11,10 @@ using StatusExposed.Database;
 namespace StatusExposed.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20220725061730_Add API keys")]
+    partial class AddAPIkeys
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "6.0.6");
@@ -23,10 +25,6 @@ namespace StatusExposed.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
                     b.Property<int>("UserId")
                         .HasColumnType("INTEGER");
 
@@ -34,7 +32,7 @@ namespace StatusExposed.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("ApiKey", (string)null);
+                    b.ToTable("ApiKey");
                 });
 
             modelBuilder.Entity("StatusExposed.Models.Permission", b =>
@@ -54,7 +52,7 @@ namespace StatusExposed.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Permission", (string)null);
+                    b.ToTable("Permission");
                 });
 
             modelBuilder.Entity("StatusExposed.Models.ServiceInformation", b =>
@@ -67,7 +65,7 @@ namespace StatusExposed.Migrations
 
                     b.HasKey("ServicePageDomain");
 
-                    b.ToTable("Services", (string)null);
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("StatusExposed.Models.StatusData", b =>
@@ -92,7 +90,7 @@ namespace StatusExposed.Migrations
 
                     b.HasIndex("ServiceInformationServicePageDomain");
 
-                    b.ToTable("StatusData", (string)null);
+                    b.ToTable("StatusData");
                 });
 
             modelBuilder.Entity("StatusExposed.Models.Subscriber", b =>
@@ -112,7 +110,7 @@ namespace StatusExposed.Migrations
 
                     b.HasIndex("ServiceInformationServicePageDomain");
 
-                    b.ToTable("Subscriber", (string)null);
+                    b.ToTable("Subscriber");
                 });
 
             modelBuilder.Entity("StatusExposed.Models.User", b =>
@@ -136,7 +134,7 @@ namespace StatusExposed.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("StatusExposed.Models.ApiKey", b =>

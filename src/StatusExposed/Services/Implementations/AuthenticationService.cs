@@ -37,12 +37,15 @@ public class AuthenticationService : IAuthenticationService
     {
         string? token = httpContextAccessor.HttpContext?.Request.Cookies["token"]?.ToString();
 
-        if (!IsValidToken(token))
+        if (!TokenGenerator.ValidateToken(token, "auth"))
         {
             return null;
         }
 
-        User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.SessionToken == token);
+        User? user = await mainDatabaseContext.Users
+            .Include(u => u.Permissions)
+            .Include(u => u.ApiKeys)
+            .FirstOrDefaultAsync(u => u.SessionToken == token);
 
         if (user is null || DateTime.UtcNow - user.LastLoginDate > TimeSpan.FromDays(7))
         {
@@ -54,7 +57,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task RegisterUserAsync(string email)
     {
-        string mailToken = GenerateMailToken();
+        string mailToken = TokenGenerator.GenerateToken("mail");
 
         User user = new User(email)
         {
@@ -73,7 +76,7 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<bool> VerifyUserAsync(string mailToken)
     {
-        if (!mailToken.StartsWith("mail-"))
+        if (!TokenGenerator.ValidateToken(mailToken, "mail"))
         {
             return false;
         }
@@ -86,7 +89,7 @@ public class AuthenticationService : IAuthenticationService
         }
         else
         {
-            string newToken = SecureStringGenerator.CreateCryptographicRandomString(128);
+            string newToken = TokenGenerator.GenerateToken("auth", user.Id);
 
             user.LastLoginDate = DateTime.UtcNow;
             user.IsVerified = true;
@@ -102,14 +105,14 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task LoginUserAsync(string email)
     {
-        string mailToken = GenerateMailToken();
-
         User? user = await mainDatabaseContext.Users.FirstOrDefaultAsync(u => u.Email == email);
 
         if (user is null)
         {
             return;
         }
+
+        string mailToken = TokenGenerator.GenerateToken("mail", user.Id);
 
         user.LastLoginDate = DateTime.UtcNow;
         user.SessionToken = mailToken;
@@ -119,9 +122,52 @@ public class AuthenticationService : IAuthenticationService
         await mainDatabaseContext.SaveChangesAsync();
     }
 
-    public Task DeleteUserAsync()
+    public async Task DeleteRequestUserAsync()
     {
-        throw new NotImplementedException();
+        User? user = await GetUserAsync();
+
+        if (user is null)
+        {
+            return;
+        }
+
+        string deletionToken = TokenGenerator.GenerateToken("delete", user.Id);
+
+        await LogoutUserAsync();
+
+        user.LastLoginDate = DateTime.UtcNow;
+        user.SessionToken = deletionToken;
+
+        await SendDeletionEmail(user.Email, deletionToken);
+
+        await mainDatabaseContext.SaveChangesAsync();
+    }
+
+    public async Task<bool> DeleteUserAsync(string deletionToken)
+    {
+        if (!TokenGenerator.ValidateToken(deletionToken, "delete"))
+        {
+            return false;
+        }
+
+        User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.SessionToken == deletionToken);
+
+        if (user is null)
+        {
+            return false;
+        }
+
+        user.Permissions.Clear();
+
+        mainDatabaseContext.Subscriber.RemoveRange(mainDatabaseContext.Subscriber.Where(s => s.Email == user.Email));
+
+        await mainDatabaseContext.SaveChangesAsync();
+
+        mainDatabaseContext.Users.Remove(user);
+
+        await mainDatabaseContext.SaveChangesAsync();
+
+        return true;
     }
 
     public async Task<bool> UserExistsAsync(string email)
@@ -133,7 +179,9 @@ public class AuthenticationService : IAuthenticationService
     {
         string? token = httpContextAccessor.HttpContext?.Request.Cookies["token"]?.ToString();
 
-        if (!IsValidToken(token))
+        await WriteCookieAsync("token", string.Empty, 0);
+
+        if (!TokenGenerator.ValidateToken(token, "auth"))
         {
             return;
         }
@@ -148,8 +196,6 @@ public class AuthenticationService : IAuthenticationService
         user.SessionToken = null;
 
         await mainDatabaseContext.SaveChangesAsync();
-
-        await WriteCookieAsync("token", string.Empty, 0);
     }
 
     public async Task<bool> IsAuthenticated()
@@ -162,21 +208,6 @@ public class AuthenticationService : IAuthenticationService
         _ = await jsRuntime.InvokeAsync<string>("blazorExtensions.WriteCookie", name, value, days);
     }
 
-    private static string GenerateMailToken()
-    {
-        return "mail-" + SecureStringGenerator.CreateCryptographicRandomString(64);
-    }
-
-    private static bool IsValidToken(string? token)
-    {
-        if (string.IsNullOrWhiteSpace(token) || token.StartsWith("mail-"))
-        {
-            return false;
-        }
-
-        return true;
-    }
-
     private async Task SendVerificationEmail(string email, string mailToken)
     {
         string verificationLink = navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}").ToString();
@@ -187,8 +218,23 @@ public class AuthenticationService : IAuthenticationService
         }
         else
         {
-            logger.LogWarning("Account verification E-Mail template not found, using fall back template.");
+            logger.LogWarning("Account verification E-mail template not found, using fall back template.");
             await emailService.SendAsync(email, "Account Verification", $"Verify your account: <a href={verificationLink}>verify</a>");
+        }
+    }
+
+    private async Task SendDeletionEmail(string email, string deletionToken)
+    {
+        string verificationLink = navigationManager.ToAbsoluteUri($"/logout/{HttpUtility.UrlEncode(deletionToken)}").ToString();
+
+        if (File.Exists(mailOptions.TemplatePaths?.AccountDeletion))
+        {
+            await emailService.SendWithTemeplateAsync(email, "Account Deletion", mailOptions.TemplatePaths.AccountDeletion, templateParameters: new TemplateParameter("deletion-link", verificationLink));
+        }
+        else
+        {
+            logger.LogWarning("Account deletion E-mail template not found, using fall back template.");
+            await emailService.SendAsync(email, "Account Deletion", $"Delete your account: <a href={verificationLink}>delete</a>");
         }
     }
 }

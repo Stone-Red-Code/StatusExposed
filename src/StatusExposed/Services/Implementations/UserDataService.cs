@@ -2,19 +2,18 @@
 
 using StatusExposed.Database;
 using StatusExposed.Models;
+using StatusExposed.Utilities;
 
 namespace StatusExposed.Services.Implementations;
 
 public class UserDataService : IUserDataService
 {
     private readonly DatabaseContext mainDatabaseContext;
-    private readonly ILogger<UserDataService> logger;
     private readonly IAuthenticationService authenticationService;
 
-    public UserDataService(DatabaseContext mainDatabaseContext, ILogger<UserDataService> logger, IAuthenticationService authenticationService)
+    public UserDataService(DatabaseContext mainDatabaseContext, IAuthenticationService authenticationService)
     {
         this.mainDatabaseContext = mainDatabaseContext;
-        this.logger = logger;
         this.authenticationService = authenticationService;
     }
 
@@ -29,7 +28,7 @@ public class UserDataService : IUserDataService
 
         if (statusInformation is null)
         {
-            return (false, $"Domain is not tracked!");
+            return (false, $"Site is not tracked!");
         }
 
         User? user = await authenticationService.GetUserAsync();
@@ -41,7 +40,12 @@ public class UserDataService : IUserDataService
 
         if (statusInformation.Subscribers.Any(s => s.Email == user.Email))
         {
-            return (false, "Already subscribed to service.");
+            return (false, "Already subscribed to site.");
+        }
+
+        if ((await GetAllSubscribedServicesAsync())!.Count() >= await GetSiteSubscribtionsLimitAsync())
+        {
+            return (false, "Max amount of subscriptions reached.");
         }
 
         statusInformation.Subscribers.Add(new Subscriber(user.Email));
@@ -62,7 +66,7 @@ public class UserDataService : IUserDataService
 
         if (statusInformation is null)
         {
-            return (false, $"Service is not tracked!");
+            return (false, $"Site is not tracked!");
         }
 
         User? user = await authenticationService.GetUserAsync();
@@ -72,7 +76,9 @@ public class UserDataService : IUserDataService
             return (false, "User is null, try to login!");
         }
 
-        statusInformation.Subscribers = statusInformation.Subscribers.Where(u => u.Email != user.Email).ToList();
+        List<Subscriber>? entriesToDelete = statusInformation.Subscribers.Where(u => u.Email == user.Email).ToList();
+
+        mainDatabaseContext.Subscriber.RemoveRange(entriesToDelete);
 
         await mainDatabaseContext.SaveChangesAsync();
 
@@ -85,7 +91,6 @@ public class UserDataService : IUserDataService
 
         if (user is null)
         {
-            logger.LogError("Anonymous can't retrieve a list of all subscribed services!");
             return null;
         }
 
@@ -93,5 +98,47 @@ public class UserDataService : IUserDataService
             .Include(s => s.Subscribers)
             .Include(s => s.StatusHistory)
             .AsSplitQuery().Where(s => s.Subscribers.Any(s => s.Email == user.Email));
+    }
+
+    public async Task<int> GetSiteSubscribtionsLimitAsync()
+    {
+        return await Task.Run(() => 10);
+    }
+
+    public async Task GenerateNewApiKeyAsync()
+    {
+        User? user = await authenticationService.GetUserAsync();
+
+        if (user is null)
+        {
+            return;
+        }
+
+        ApiKey apiKey = new ApiKey(TokenGenerator.GenerateToken("api", user.Id, 64));
+
+        user.ApiKeys.Add(apiKey);
+
+        await mainDatabaseContext.SaveChangesAsync();
+    }
+
+    public async Task RemoveApiKeyAsync(ApiKey apiKey)
+    {
+        User? user = await authenticationService.GetUserAsync();
+
+        if (user is null)
+        {
+            return;
+        }
+
+        user.ApiKeys.Remove(apiKey);
+
+        await mainDatabaseContext.SaveChangesAsync();
+    }
+
+    public async Task<List<ApiKey>?> GetApiKeysAsync()
+    {
+        User? user = await authenticationService.GetUserAsync();
+
+        return user?.ApiKeys;
     }
 }

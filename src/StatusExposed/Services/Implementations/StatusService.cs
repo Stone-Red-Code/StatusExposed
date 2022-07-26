@@ -205,7 +205,7 @@ public class StatusService : IStatusService
                 }
                 else
                 {
-                    logger.LogWarning("Status changed E-Mail template not found, using fall back template.");
+                    logger.LogWarning("Status changed E-mail template not found, using fall back template.");
                     await emailService.SendAsync(
                         subscriberAddresses,
                         $"{serviceInformation.ServicePageDomain} is {serviceInformation.CurrentStatus.Status}",
