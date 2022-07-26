@@ -105,8 +105,6 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<(bool Success, string? Message)> LoginUserAsync(string email)
     {
-        string mailToken = GenerateMailToken();
-
         User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
 
         if (user is null)
