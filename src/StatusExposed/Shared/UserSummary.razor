@@ -4,6 +4,7 @@
 @using System.Globalization
 
 @inject IAdminDataService AdminDataService
+@inject IMessageService MessageService
 
 @if (User is not null)
 {
@@ -113,7 +114,11 @@
             return;
         }
 
-        await AdminDataService.DeleteUserAsync(User.Email);
+        if (await MessageService.Confirm($"Do you really want to delete the user {User.Email}?", "Delete Account", (o) => { o.CancelButtonText = "No, I'll give them another chance!"; o.ConfirmButtonColor = Color.Danger; }))
+        {
+            await AdminDataService.DeleteUserAsync(User.Email);
+            User = null;
+        }
     }
 
     private void NewRoleValidationStatusChanged(ValidationsStatusChangedEventArgs e)
