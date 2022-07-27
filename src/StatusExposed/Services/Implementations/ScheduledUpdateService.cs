@@ -31,7 +31,7 @@ public class ScheduledUpdateService : IHostedService
     {
         logger.LogInformation("Stopping scheduled update service");
 
-        _ = (timer?.Change(Timeout.Infinite, 0));
+        _ = timer?.Change(Timeout.Infinite, 0);
 
         return Task.CompletedTask;
     }
