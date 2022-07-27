@@ -16,7 +16,7 @@ public interface IStatusService
     /// </summary>
     /// <param name="domain">Domain of the service.</param>
     /// <param name="statusPageUrl">Official status page of the service.</param>
-    /// <returns>A <see cref="Task"/> to await</returns>
+    /// <returns>A <see cref="Task"/> to <see langword="await"/>.</returns>
     Task AddServiceAsync(string domain, string? statusPageUrl);
 
     /// <summary>
@@ -31,6 +31,6 @@ public interface IStatusService
     /// Updates the status of the specified domain.
     /// </summary>
     /// <param name="domain">Domain of the service.</param>
-    /// <returns>A <see cref="Task"/> to await</returns>
+    /// <returns>A <see cref="Task"/> to <see langword="await"/>.</returns>
     Task UpdateStatusAsync(string domain);
 }
