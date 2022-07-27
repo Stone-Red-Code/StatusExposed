@@ -13,9 +13,9 @@ namespace StatusExposed.Services.Implementations;
 
 public class EmailService : IEmailService
 {
-    private readonly EmailOptions mailOptions;
+    private readonly EmailSettings mailOptions;
 
-    public EmailService(IOptions<EmailOptions> mailOptions)
+    public EmailService(IOptions<EmailSettings> mailOptions)
     {
         this.mailOptions = mailOptions.Value;
     }

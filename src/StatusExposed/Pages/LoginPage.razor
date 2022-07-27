@@ -1,12 +1,13 @@
 ﻿@page "/login/{*MailToken}"
 
 @using System.Text.RegularExpressions
-
+@using Microsoft.Extensions.Options
 @using StatusExposed.Models
+@using StatusExposed.Models.Options
 @using StatusExposed.Services
 
 @inject IAuthenticationService AuthenticationService
-@inject IConfiguration Configuration
+@inject IOptions<GeneralSettings> GeneralSettings
 
 @inject NavigationManager NavigationManager
 
@@ -27,7 +28,7 @@
                         </TextEdit>
                     </Field>
                 </Validation>
-                @if (File.Exists(Configuration["LegalNotePath"]))
+                @if (File.Exists(GeneralSettings.Value.FilePaths.LegalNoticePath))
                 {
                     <Validation Validator="ValidationRule.IsChecked">
                         <Check TValue="bool" Disabled="isLoading">

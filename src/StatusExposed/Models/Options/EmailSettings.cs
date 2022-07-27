@@ -1,6 +1,6 @@
 ﻿namespace StatusExposed.Models.Options;
 
-public class EmailOptions
+public class EmailSettings
 {
     public string? DefaultEmailAddress { get; set; }
     public string? SmtpServer { get; set; }

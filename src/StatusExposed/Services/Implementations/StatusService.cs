@@ -13,17 +13,17 @@ public class StatusService : IStatusService
 {
     private readonly DatabaseContext mainDatabaseContext;
     public readonly ILogger<StatusService> logger;
-    private readonly IConfiguration configuration;
     private readonly IServiceScopeFactory serviceScopeFactory;
-    private readonly EmailOptions mailOptions;
+    private readonly GeneralSettings generalSettings;
+    private readonly EmailSettings mailSettings;
 
-    public StatusService(DatabaseContext mainDatabaseContext, ILogger<StatusService> logger, IConfiguration configuration, IServiceScopeFactory serviceScopeFactory, IOptions<EmailOptions> mailOptions)
+    public StatusService(DatabaseContext mainDatabaseContext, ILogger<StatusService> logger, IServiceScopeFactory serviceScopeFactory, IOptions<GeneralSettings> generalSettings, IOptions<EmailSettings> mailSettings)
     {
         this.mainDatabaseContext = mainDatabaseContext;
         this.logger = logger;
-        this.configuration = configuration;
         this.serviceScopeFactory = serviceScopeFactory;
-        this.mailOptions = mailOptions.Value;
+        this.mailSettings = mailSettings.Value;
+        this.generalSettings = generalSettings.Value;
     }
 
     ///<inheritdoc cref="IStatusService.GetStatusAsync(string)(string, string?)"/>
@@ -32,7 +32,7 @@ public class StatusService : IStatusService
         domain = domain.Trim().ToLower();
 
         // Only manually update if automatic updates are disabled
-        if (!configuration.GetValue<bool>("AutomaticUpdates"))
+        if (!generalSettings.AutomaticUpdates)
         {
             await UpdateStatusAsync(domain);
         }
@@ -85,6 +85,7 @@ public class StatusService : IStatusService
         ServiceInformation? statusInformation = await mainDatabaseContext.Services
             .Include(s => s.StatusHistory)
             .Include(s => s.Subscribers)
+            .AsSingleQuery()
             .FirstOrDefaultAsync(s => s.ServicePageDomain == domain);
 
         await UpdateStatusAsync(statusInformation);
@@ -92,7 +93,7 @@ public class StatusService : IStatusService
 
     private async Task UpdateStatusAsync(ServiceInformation? serviceInformation, bool addNew = false)
     {
-        if (serviceInformation is null || (DateTime.UtcNow - serviceInformation.CurrentStatus.LastUpdateTime < TimeSpan.FromMinutes(10)))
+        if (serviceInformation is null || (DateTime.UtcNow - serviceInformation.CurrentStatus.LastUpdateTime < generalSettings.UpdatePeriodTimeSpan))
         {
             return;
         }
@@ -120,14 +121,14 @@ public class StatusService : IStatusService
 
         serviceInformation.StatusHistory.Add(statusHistoryData);
 
-        // Limit history entries to 144 (10 min * 100 entries = 24h history)
+        // Delete entries older than a year
         serviceInformation.StatusHistory = serviceInformation.StatusHistory
-            .OrderByDescending(h => h.LastUpdateTime)
-            .Take(144).ToList();
+            .Where(h => DateTime.UtcNow - h.LastUpdateTime < TimeSpan.FromDays(365))
+            .ToList();
 
         if (addNew)
         {
-            mainDatabaseContext.Add(serviceInformation);
+            _ = mainDatabaseContext.Add(serviceInformation);
         }
 
         _ = await mainDatabaseContext.SaveChangesAsync();
@@ -154,14 +155,7 @@ public class StatusService : IStatusService
                 pingStopWatch.Stop();
                 statusHistoryData.ResponseTime = TimeSpan.FromMilliseconds(pingStopWatch.ElapsedMilliseconds);
 
-                if (response?.IsSuccessStatusCode == true)
-                {
-                    statusHistoryData.Status = Status.Up;
-                }
-                else
-                {
-                    statusHistoryData.Status = Status.Down;
-                }
+                statusHistoryData.Status = response?.IsSuccessStatusCode == true ? Status.Up : Status.Down;
             }
             catch (HttpRequestException)
             {
@@ -193,12 +187,12 @@ public class StatusService : IStatusService
             {
                 IEnumerable<string> subscriberAddresses = serviceInformation.Subscribers.Select(s => s.Email);
 
-                if (File.Exists(mailOptions?.TemplatePaths?.StatusChanged))
+                if (File.Exists(mailSettings?.TemplatePaths?.StatusChanged))
                 {
                     await emailService.SendWithTemeplateAsync(
                         subscriberAddresses,
                         $"{serviceInformation.ServicePageDomain} is {serviceInformation.CurrentStatus.Status}",
-                        mailOptions.TemplatePaths.StatusChanged,
+                        mailSettings.TemplatePaths.StatusChanged,
                         null,
                         new TemplateParameter("current-status", serviceInformation.CurrentStatus.Status.ToString()),
                         new TemplateParameter("old-status", oldStatus.ToString()));

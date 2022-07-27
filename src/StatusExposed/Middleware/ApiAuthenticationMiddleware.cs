@@ -18,7 +18,7 @@ public class ApiAuthenticationMiddleware
     {
         if (context.Request.Headers.ContainsKey("X-ClientId"))
         {
-            context.Request.Headers.Remove("X-ClientId");
+            _ = context.Request.Headers.Remove("X-ClientId");
         }
 
         string? authorizationText = context.Request.Headers.Authorization.FirstOrDefault();
