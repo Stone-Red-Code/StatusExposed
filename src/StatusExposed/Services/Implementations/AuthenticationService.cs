@@ -20,9 +20,9 @@ public class AuthenticationService : IAuthenticationService
     private readonly IHttpContextAccessor httpContextAccessor;
     private readonly IJSRuntime jsRuntime;
     private readonly IEmailService emailService;
-    private readonly EmailOptions mailOptions;
+    private readonly EmailSettings mailOptions;
 
-    public AuthenticationService(DatabaseContext mainDatabaseContext, ILogger<AuthenticationService> logger, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor, IJSRuntime jsRuntime, IEmailService emailService, IOptions<EmailOptions> mailOptions)
+    public AuthenticationService(DatabaseContext mainDatabaseContext, ILogger<AuthenticationService> logger, NavigationManager navigationManager, IHttpContextAccessor httpContextAccessor, IJSRuntime jsRuntime, IEmailService emailService, IOptions<EmailSettings> mailOptions)
     {
         this.mainDatabaseContext = mainDatabaseContext;
         this.logger = logger;
@@ -45,14 +45,10 @@ public class AuthenticationService : IAuthenticationService
         User? user = await mainDatabaseContext.Users
             .Include(u => u.Permissions)
             .Include(u => u.ApiKeys)
+            .AsSingleQuery()
             .FirstOrDefaultAsync(u => u.SessionToken == token);
 
-        if (user is null || user.IsBanned || DateTime.UtcNow - user.LastLoginDate > TimeSpan.FromDays(7))
-        {
-            return null;
-        }
-
-        return user;
+        return user is null || user.IsBanned || DateTime.UtcNow - user.LastLoginDate > TimeSpan.FromDays(7) ? null : user;
     }
 
     public async Task RegisterUserAsync(string email)
@@ -70,8 +66,8 @@ public class AuthenticationService : IAuthenticationService
 
         await SendVerificationEmail(email, mailToken);
 
-        mainDatabaseContext.Users.Add(user);
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = mainDatabaseContext.Users.Add(user);
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task<bool> VerifyUserAsync(string mailToken)
@@ -95,7 +91,7 @@ public class AuthenticationService : IAuthenticationService
             user.IsVerified = true;
             user.SessionToken = newToken;
 
-            await mainDatabaseContext.SaveChangesAsync();
+            _ = await mainDatabaseContext.SaveChangesAsync();
 
             await WriteCookieAsync("token", newToken, 7);
 
@@ -116,12 +112,7 @@ public class AuthenticationService : IAuthenticationService
         {
             string? banReason = user.Permissions.FirstOrDefault(p => p.Name.StartsWith("banreason:"))?.Name;
 
-            if (!string.IsNullOrWhiteSpace(banReason))
-            {
-                return (false, $"Ban reason: {banReason.Split(':')[1]}");
-            }
-
-            return (false, null);
+            return !string.IsNullOrWhiteSpace(banReason) ? ((bool Success, string? Message))(false, $"Ban reason: {banReason.Split(':')[1]}") : ((bool Success, string? Message))(false, null);
         }
 
         string mailToken = TokenGenerator.GenerateToken("mail", user.Id);
@@ -131,7 +122,7 @@ public class AuthenticationService : IAuthenticationService
 
         await SendVerificationEmail(email, mailToken);
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
 
         return (true, null);
     }
@@ -154,7 +145,7 @@ public class AuthenticationService : IAuthenticationService
 
         await SendDeletionEmail(user.Email, deletionToken);
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task<bool> DeleteUserAsync(string deletionToken)
@@ -175,11 +166,11 @@ public class AuthenticationService : IAuthenticationService
 
         mainDatabaseContext.Subscriber.RemoveRange(mainDatabaseContext.Subscriber.Where(s => s.Email == user.Email));
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
 
-        mainDatabaseContext.Users.Remove(user);
+        _ = mainDatabaseContext.Users.Remove(user);
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
 
         return true;
     }
@@ -209,7 +200,7 @@ public class AuthenticationService : IAuthenticationService
 
         user.SessionToken = null;
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task<bool> IsAuthenticated()

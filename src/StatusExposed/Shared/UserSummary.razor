@@ -1,6 +1,7 @@
 ﻿@using StatusExposed.Models
 @using StatusExposed.Services
 @using StatusExposed.Utilities
+@using System.Globalization
 
 @inject IAdminDataService AdminDataService
 
@@ -13,7 +14,7 @@
         <br />
         Verified: @User.IsVerified
         <br />
-        Last login date: @User.LastLoginDate
+        Last login date: @User.LastLoginDate.ToString("R", CultureInfo.CreateSpecificCulture("en-US"))
         <br />
         Permissions:
         <Table Border="Border.Dark" Responsive>

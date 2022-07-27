@@ -1,8 +1,10 @@
 ﻿@page "/api"
 
 @using BlazorMarkdown
+@using Microsoft.Extensions.Options
+@using StatusExposed.Models.Options
 
-@inject IConfiguration Configuration
+@inject IOptions<GeneralSettings> GeneralSettings
 
 <HeadContent>
     <!-- HTML Meta Tags -->
@@ -22,7 +24,7 @@
     <meta name="twitter:description" content="Free StatusExposed public API">
 </HeadContent>
 
-@if(File.Exists(Configuration["ApiInfoPath"]))
+@if(File.Exists(GeneralSettings.Value.FilePaths.ApiInfoPath))
 {
-    <Markdown FilePath="@Configuration["ApiInfoPath"]"/>
+    <Markdown FilePath="@GeneralSettings.Value.FilePaths.ApiInfoPath"/>
 }

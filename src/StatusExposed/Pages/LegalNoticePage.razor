@@ -1,10 +1,12 @@
 ﻿@page "/legal"
 
 @using BlazorMarkdown
+@using Microsoft.Extensions.Options
+@using StatusExposed.Models.Options
 
-@inject IConfiguration Configuration
+@inject IOptions<GeneralSettings> GeneralSettings
 
-@if(File.Exists(Configuration["LegalNotePath"]))
+@if(File.Exists(GeneralSettings.Value.FilePaths.LegalNoticePath))
 {
-    <Markdown FilePath="@Configuration["LegalNotePath"]"/>
+    <Markdown FilePath="@GeneralSettings.Value.FilePaths.LegalNoticePath"/>
 }

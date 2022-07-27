@@ -1,34 +1,38 @@
-﻿namespace StatusExposed.Services.Implementations;
+﻿using Microsoft.Extensions.Options;
+
+using StatusExposed.Models.Options;
+
+namespace StatusExposed.Services.Implementations;
 
 public class ScheduledUpdateService : IHostedService
 {
     private readonly ILogger logger;
     private readonly IServiceScopeFactory serviceScopeFactory;
-    private readonly IConfiguration configuration;
+    private readonly GeneralSettings generalSettings;
     private Timer? timer;
 
-    public ScheduledUpdateService(ILogger<ScheduledUpdateService> logger, IServiceScopeFactory serviceScopeFactory, IConfiguration configuration)
+    public ScheduledUpdateService(ILogger<ScheduledUpdateService> logger, IServiceScopeFactory serviceScopeFactory, IOptions<GeneralSettings> generalSettings)
     {
         this.logger = logger;
         this.serviceScopeFactory = serviceScopeFactory;
-        this.configuration = configuration;
+        this.generalSettings = generalSettings.Value;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        timer = new Timer((_) => UpdateServices(), null, TimeSpan.Zero, TimeSpan.FromMinutes(10));
+        timer = new Timer((_) => UpdateServices(), null, TimeSpan.Zero, generalSettings.UpdatePeriodTimeSpan);
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        timer?.Change(Timeout.Infinite, 0);
+        _ = (timer?.Change(Timeout.Infinite, 0));
         return Task.CompletedTask;
     }
 
     private void UpdateServices()
     {
-        if (!configuration.GetValue<bool>("AutomaticUpdates"))
+        if (!generalSettings.AutomaticUpdates)
         {
             return;
         }
@@ -46,7 +50,7 @@ public class ScheduledUpdateService : IHostedService
                 .GetStatuses(count * 1000, 1000)
                 .Select(s => s.ServicePageDomain);
 
-            Parallel.ForEach(domains, async (domain) =>
+            _ = Parallel.ForEach(domains, async (domain) =>
             {
                 logger.LogDebug("Updating {domain} ...", domain);
                 using IServiceScope scope = serviceScopeFactory.CreateScope();

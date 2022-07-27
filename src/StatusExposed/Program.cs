@@ -4,6 +4,9 @@ using Blazorise;
 using Blazorise.Bootstrap;
 using Blazorise.Icons.FontAwesome;
 
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
 using StatusExposed.Database;
 using StatusExposed.Middleware;
 using StatusExposed.Models.Options;
@@ -22,10 +25,10 @@ builder.Services.AddOptions();
 builder.Services.AddMemoryCache();
 builder.Services.Configure<ClientRateLimitOptions>(builder.Configuration.GetSection("ClientRateLimiting"));
 builder.Services.Configure<ClientRateLimitPolicies>(builder.Configuration.GetSection("ClientRateLimitPolicies"));
-builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.Configure<GeneralSettings>(builder.Configuration.GetSection("Settings"));
 builder.Services.AddInMemoryRateLimiting();
 builder.Services.AddHostedService<ScheduledUpdateService>();
-builder.Services.AddSingleton<IDatabaseConfiguration>(new DatabaseConfiguration(builder.Configuration["DatabasePath"]));
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IAuthorizationService, AuthorizationService>();
 builder.Services.AddScoped<IAdminDataService, AdminDataService>();
@@ -36,11 +39,19 @@ builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IUserDataService, UserDataService>();
 builder.Services.AddTransient<IClipboardService, ClipboardService>();
-builder.Services.AddDbContext<DatabaseContext>();
-builder.Services.AddBlazorise(options => { options.Immediate = true; });
+builder.Services.AddBlazorise(options => options.Immediate = true);
 builder.Services.AddBootstrapProviders();
 builder.Services.AddFontAwesomeIcons();
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddDbContext<DatabaseContext>(options =>
+{
+    _ = options.UseSqlite(builder.Configuration.GetConnectionString("MainDatabase"));
+    _ = options.ConfigureWarnings(w =>
+    {
+        _ = w.Ignore(CoreEventId.RowLimitingOperationWithoutOrderByWarning);
+        _ = w.Throw(RelationalEventId.MultipleCollectionIncludeWarning);
+    });
+});
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());

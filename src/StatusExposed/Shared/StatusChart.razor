@@ -1,4 +1,5 @@
 ﻿@using StatusExposed.Models
+@using System.Globalization
 
 <LineChart @ref="lineChart" TItem="double" Options="GetLineChartOptions()" />
 
@@ -50,7 +51,11 @@
             throw new ArgumentNullException(nameof(StatusInformation));
         }
 
-        return StatusInformation.StatusHistory.OrderBy(s => s.LastUpdateTime).Select(s => s.LastUpdateTime.ToString()).ToList();
+        return StatusInformation.StatusHistory
+            .OrderBy(s => s.LastUpdateTime)
+            .TakeLast(dataPoints)
+            .Select(s => s.LastUpdateTime.ToString("R", CultureInfo.CreateSpecificCulture("en-US")))
+            .ToList();
     }
 
     private List<double> GetLineChartData()
@@ -62,6 +67,7 @@
 
         return StatusInformation.StatusHistory
             .OrderBy(s => s.LastUpdateTime)
+            .TakeLast(dataPoints)
             .Select(s => s.ResponseTime == TimeSpan.MaxValue ? 0 : s.ResponseTime.TotalMilliseconds)
             .ToList();
     }
@@ -75,6 +81,7 @@
 
         IEnumerable<ChartColor> chartColors = StatusInformation.StatusHistory
             .OrderBy(s => s.LastUpdateTime)
+            .TakeLast(dataPoints)
             .Select(s => s.Status == Status.Up ? ChartColor.FromRgba(0, 255, 0, 1f) : ChartColor.FromRgba(255, 0, 0, 1f));
 
         List<string> pointColors = new List<string>();
@@ -100,12 +107,20 @@
                 {
                     Y = new ChartAxis()
                     {
-                        Min = 0,
+                        Min = 0
+                    },
+                    X = new ChartAxis()
+                    {
+                        Ticks = new ChartAxisTicks()
+                        {
+                            Display = false
+                        }
                     }
                 }
             };
     }
 
+    private const int dataPoints = 50;
     private List<string> backgroundColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 0.2f) };
     private List<string> borderColors = new List<string> { ChartColor.FromRgba(255, 99, 132, 1f) };
 }
