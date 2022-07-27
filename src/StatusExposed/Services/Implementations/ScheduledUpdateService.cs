@@ -20,13 +20,19 @@ public class ScheduledUpdateService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        logger.LogInformation("Starting scheduled update service");
+
         timer = new Timer((_) => UpdateServices(), null, TimeSpan.Zero, generalSettings.UpdatePeriodTimeSpan);
+
         return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
+        logger.LogInformation("Stopping scheduled update service");
+
         _ = (timer?.Change(Timeout.Infinite, 0));
+
         return Task.CompletedTask;
     }
 
