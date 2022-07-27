@@ -21,7 +21,7 @@
                         <Validation @ref="validation" Validator="CustomValidators.ValidateDomain">
                             <Field Margin="Margin.Is3.OnX.FromEnd">
                                 <FieldLabel Class="h5">Subscribe to a site</FieldLabel>
-                                <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="isLoading" Autofocus="true">
+                                <TextEdit Placeholder="example.com" Width="Width.Is100" @bind-Text="domainText" KeyDown="Enter" Disabled="serviceAddIsLoading" Autofocus="true">
                                     <Feedback>
                                         <ValidationNone>Enter a domain.</ValidationNone>
                                         <ValidationSuccess>Domain is valid.</ValidationSuccess>
@@ -33,7 +33,7 @@
                     </Validations>
                     <Span Margin="Margin.IsAuto.OnY">
                         <Tooltip Text="Subscribe (Notifies you by E-mail when the status changes)">
-                            <Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!isValid || isLoading" Loading="isLoading">Subscribe</Button>
+                            <Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="Subscribe" Disabled="!domainIsValid || serviceAddIsLoading" Loading="serviceAddIsLoading">Subscribe</Button>
                         </Tooltip>
                     </Span>
                 </Row>
@@ -136,8 +136,9 @@
     private int siteSubscribtionsLimit;
     private int apiKeysLimit;
 
-    private bool isValid;
-    private bool isLoading;
+    private bool domainIsValid;
+    private bool serviceAddIsLoading;
+    private bool apiKeyAddIsLoading;
 
     private string? domainText;
 
@@ -152,12 +153,12 @@
 
     private async Task Subscribe()
     {
-        if (domainText is null || !isValid || isLoading)
+        if (domainText is null || !domainIsValid || serviceAddIsLoading)
         {
             return;
         }
 
-        isLoading = true;
+        serviceAddIsLoading = true;
 
         (bool IsSuccess, string? ErrorMessage) result = await UserDataService.SubscribeToServiceAsync(domainText);
 
@@ -171,7 +172,7 @@
             validation.NotifyValidationStatusChanged(ValidationStatus.Error, new[] { result.ErrorMessage });
         }
 
-        isLoading = false;
+        serviceAddIsLoading = false;
     }
 
     private async Task Unsubscribe(string domain)
@@ -181,7 +182,14 @@
 
     private async Task GenerateApiKey()
     {
+        if(apiKeyAddIsLoading)
+        {
+            return;
+        }
+
+        apiKeyAddIsLoading = true;
         await UserDataService.GenerateNewApiKeyAsync();
+        apiKeyAddIsLoading = false;
     }
 
     private async Task RemoveApiKey(ApiKey apiKey)
@@ -200,7 +208,7 @@
 
     private void ValidationStatusChanged(ValidationsStatusChangedEventArgs e)
     {
-        isValid = e.Status != ValidationStatus.Error;
+        domainIsValid = e.Status != ValidationStatus.Error;
     }
 
     public async Task Enter(KeyboardEventArgs e)
