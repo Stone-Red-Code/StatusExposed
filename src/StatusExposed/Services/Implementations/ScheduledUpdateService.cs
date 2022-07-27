@@ -20,7 +20,7 @@ public class ScheduledUpdateService : IHostedService
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        logger.LogInformation("Starting scheduled update service");
+        logger.LogInformation("Starting scheduled update service. Automatic updates enabled: {enabled} - Period: {period}", generalSettings.AutomaticUpdates, generalSettings.UpdatePeriodTimeSpan);
 
         timer = new Timer((_) => UpdateServices(), null, TimeSpan.Zero, generalSettings.UpdatePeriodTimeSpan);
 

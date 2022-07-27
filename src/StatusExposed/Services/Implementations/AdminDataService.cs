@@ -9,30 +9,22 @@ public class AdminDataService : IAdminDataService
 {
     private readonly DatabaseContext mainDatabaseContext;
     private readonly IAuthorizationService authorizationService;
+    private readonly ILogger<AdminDataService> logger;
 
-    public AdminDataService(DatabaseContext mainDatabaseContext, IAuthorizationService authorizationService)
+    public AdminDataService(DatabaseContext mainDatabaseContext, IAuthorizationService authorizationService, ILogger<AdminDataService> logger)
     {
         this.mainDatabaseContext = mainDatabaseContext;
         this.authorizationService = authorizationService;
+        this.logger = logger;
     }
 
     public async Task<int> GetAmountOfServicesAsync()
     {
-        if (!await authorizationService.IsAuthorized("role:admin"))
-        {
-            return -1;
-        }
-
-        return mainDatabaseContext.Services.Count();
+        return !await authorizationService.IsAuthorized("role:admin") ? -1 : mainDatabaseContext.Services.Count();
     }
 
     public async Task<int> GetAmountOfUsersAsync(bool? verified = null)
     {
-        if (!await authorizationService.IsAuthorized("role:admin"))
-        {
-            return -1;
-        }
-
         if (verified is null)
         {
             return await mainDatabaseContext.Users.CountAsync();
@@ -49,6 +41,8 @@ public class AdminDataService : IAdminDataService
         {
             return null;
         }
+
+        logger.LogInformation("An Admin requested the data from {email}", email);
 
         return await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
     }
@@ -72,9 +66,11 @@ public class AdminDataService : IAdminDataService
             return;
         }
 
+        logger.LogInformation("An Admin added the permission ({permission}) to the user {email}", permission.Name, email);
+
         user.Permissions.Add(permission);
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task RemovePermissionFromUserAsync(string email, Permission permission)
@@ -91,9 +87,11 @@ public class AdminDataService : IAdminDataService
             return;
         }
 
-        user.Permissions.Remove(permission);
+        logger.LogInformation("An Admin removed the permission ({permission}) to the user {email}", permission.Name, email);
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = user.Permissions.Remove(permission);
+
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task SetUserBan(string email, bool isBanned)
@@ -110,8 +108,10 @@ public class AdminDataService : IAdminDataService
             return;
         }
 
+        logger.LogInformation("An Admin {banned} the user {email}", isBanned ? "banned" : "unbanned", email);
+
         user.IsBanned = isBanned;
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 }
