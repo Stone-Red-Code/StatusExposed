@@ -76,7 +76,7 @@
 
                 @if (apiKeys is not null)
                 {
-                    <h5 class="mt-4">API keys</h5>
+                    <h5 class="mt-4">API keys (@apiKeys.Count()/@apiKeysLimit)</h5>
 
                     if (apiKeys.Count() == 0)
                     {
@@ -108,7 +108,7 @@
 
                             <TableRow>
                                 <TableRowCell Class="align-middle" Style="width:20px;">
-                                    <Button Clicked="GenerateApiKey" Color="Color.Primary">Generate</Button>
+                                    <Button Disabled="apiKeys?.Count() >= apiKeysLimit" Clicked="GenerateApiKey" Color="Color.Primary">Generate</Button>
                                 </TableRowCell>
                                 <TableRowCell />
                                 <TableRowCell />
@@ -134,6 +134,7 @@
     private IEnumerable<ServiceInformation>? subscibedServices;
     private IEnumerable<ApiKey>? apiKeys;
     private int siteSubscribtionsLimit;
+    private int apiKeysLimit;
 
     private bool isValid;
     private bool isLoading;
@@ -146,6 +147,7 @@
         subscibedServices = (await UserDataService.GetAllSubscribedServicesAsync())?.OrderByDescending(s => s.CurrentStatus.Status);
         siteSubscribtionsLimit = await UserDataService.GetSiteSubscribtionsLimitAsync();
         apiKeys = await UserDataService.GetApiKeysAsync();
+        apiKeysLimit = await UserDataService.GetSiteApiKeysLimitAsync();
     }
 
     private async Task Subscribe()

@@ -48,4 +48,10 @@ public interface IUserDataService
     /// </summary>
     /// <returns>A <see cref="Task"/> to <see langword="await"/> and a <see cref="List{T}"/> of all API keys of the user.</returns>
     Task<List<ApiKey>?> GetApiKeysAsync();
+
+    /// <summary>
+    /// Gets the max amount of API keys the user can have.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> to <see langword="await"/> and the max amount of API keys a user can subscribe to.</returns>
+    Task<int> GetSiteApiKeysLimitAsync();
 }

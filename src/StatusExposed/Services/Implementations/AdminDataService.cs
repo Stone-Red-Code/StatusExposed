@@ -37,6 +37,8 @@ public class AdminDataService : IAdminDataService
 
     public async Task<User?> GetUserInfoAsync(string email)
     {
+        email = email.Trim().ToLower();
+
         if (!await authorizationService.IsAuthorized("role:admin"))
         {
             return null;
@@ -47,13 +49,33 @@ public class AdminDataService : IAdminDataService
         return await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public Task LogOutUserAsync(string email)
+    public async Task DeleteUserAsync(string email)
     {
-        throw new NotImplementedException();
+        email = email.Trim().ToLower();
+
+        if (!await authorizationService.IsAuthorized("role:admin"))
+        {
+            return;
+        }
+
+        User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user is null)
+        {
+            return;
+        }
+
+        mainDatabaseContext.Subscriber.RemoveRange(mainDatabaseContext.Subscriber.Where(s => s.Email == user.Email));
+
+        _ = mainDatabaseContext.Users.Remove(user);
+
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task AddPermissionToUserAsync(string email, Permission permission)
     {
+        email = email.Trim().ToLower();
+
         if (!await authorizationService.IsAuthorized("role:admin"))
         {
             return;
@@ -75,6 +97,8 @@ public class AdminDataService : IAdminDataService
 
     public async Task RemovePermissionFromUserAsync(string email, Permission permission)
     {
+        email = email.Trim().ToLower();
+
         if (!await authorizationService.IsAuthorized("role:admin"))
         {
             return;
@@ -96,6 +120,8 @@ public class AdminDataService : IAdminDataService
 
     public async Task SetUserBan(string email, bool isBanned)
     {
+        email = email.Trim().ToLower();
+
         if (!await authorizationService.IsAuthorized("role:admin"))
         {
             return;

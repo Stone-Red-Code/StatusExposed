@@ -52,14 +52,11 @@
             </TableBody>
         </Table>
 
-        @if (User.IsBanned)
-        {
-            <Button Color="Color.Danger" Clicked="SetUserBan">Unban user</Button>
-        }
-        else
-        {
-            <Button Color="Color.Danger" Clicked="SetUserBan">Ban user</Button>
-        }
+         <Button Margin="Margin.Is3.OnX.FromEnd" Color="Color.Danger" Clicked="SetUserBan">
+             @(User.IsBanned ? "Unban User" : "Ban User")
+        </Button>
+
+        <Button Color="Color.Danger" Clicked="DeleteUser">Delete user</Button>
     </p>
 }
 
@@ -107,6 +104,16 @@
         }
 
         await AdminDataService.SetUserBan(User.Email, !User.IsBanned);
+    }
+
+    private async Task DeleteUser()
+    {
+        if (User is null)
+        {
+            return;
+        }
+
+        await AdminDataService.DeleteUserAsync(User.Email);
     }
 
     private void NewRoleValidationStatusChanged(ValidationsStatusChangedEventArgs e)

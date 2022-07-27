@@ -16,7 +16,7 @@ public interface IAdminDataService
     /// </summary>
     /// <param name="email"></param>
     /// <returns>A <see cref="Task"/> to <see langword="await"/>.</returns>
-    Task LogOutUserAsync(string email);
+    Task DeleteUserAsync(string email);
 
     /// <summary>
     /// Gets the amount of the registered users.
