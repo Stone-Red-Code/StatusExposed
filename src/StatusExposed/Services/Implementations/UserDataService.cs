@@ -149,6 +149,6 @@ public class UserDataService : IUserDataService
 
     public async Task<int> GetSiteApiKeysLimitAsync()
     {
-        return await Task.Run(() => 10);
+        return await Task.Run(() => 5);
     }
 }
