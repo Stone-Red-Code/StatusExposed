@@ -25,7 +25,7 @@ public class StatusController : Controller
 
         if (statusInformation is null)
         {
-            return NotFound($"{domain} is not tracked");
+            return Problem($"{domain} is not tracked", statusCode: StatusCodes.Status404NotFound);
         }
 
         return Ok(statusInformation);
