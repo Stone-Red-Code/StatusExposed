@@ -15,6 +15,6 @@ public class StatusData
     public DateTime LastUpdateTime { get; set; }
     public TimeSpan ResponseTime { get; set; } = TimeSpan.MaxValue;
 
-    public string FormatedUpdateTime => (DateTime.UtcNow - LastUpdateTime).ToRelevantTimeUnitString();
-    public string FormatedResponseTimeTime => ResponseTime.ToRelevantTimeUnitString();
+    public string FormattedLastUpdateTime => (DateTime.UtcNow - LastUpdateTime).ToRelevantTimeUnitString();
+    public string FormattedResponseTimeTime => ResponseTime.ToRelevantTimeUnitString();
 }

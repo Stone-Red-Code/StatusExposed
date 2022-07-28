@@ -53,7 +53,7 @@
                 }
                 else
                 {
-                    <span class="ml-1">@statusInformation?.CurrentStatus.FormatedResponseTimeTime</span>
+                    <span class="ml-1">@statusInformation?.CurrentStatus.FormattedResponseTimeTime</span>
                 }
             </Span>
             <br />
@@ -64,7 +64,7 @@
             }
             else
             {
-                <Span TextColor="TextColor.Muted">Updated @statusInformation?.CurrentStatus.FormatedUpdateTime ago</Span>
+                <Span TextColor="TextColor.Muted">Updated @statusInformation?.CurrentStatus.FormattedLastUpdateTime ago</Span>
             }
 
             <div style="height: 350px; width: 700px" class="d-none d-lg-block m-auto">
@@ -115,8 +115,8 @@
 
     private string? EscapedServicePageDomain => ServicePageDomain?.Replace('.', '/');
     private string PlainStatusString => $"{ServicePageDomain} is currently {(statusInformation?.CurrentStatus.Status ?? Status.Unknown)}";
-    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.CurrentStatus.FormatedResponseTimeTime)} | "
-                                    + $"{(statusInformation is null || statusInformation?.CurrentStatus.ResponseTime == TimeSpan.MaxValue ? "Updating..." : ($"Updated {statusInformation?.CurrentStatus.FormatedUpdateTime} ago"))}";
+    private string PlainInfoString => $"Response time: {(statusInformation is null ? "infinite" : statusInformation.CurrentStatus.FormattedResponseTimeTime)} | "
+                                    + $"{(statusInformation is null || statusInformation?.CurrentStatus.ResponseTime == TimeSpan.MaxValue ? "Updating..." : ($"Updated {statusInformation?.CurrentStatus.FormattedLastUpdateTime} ago"))}";
 
     private string ThemeColor
     {

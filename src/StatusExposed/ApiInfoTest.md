@@ -25,7 +25,7 @@
          "status":"Up",
          "lastUpdateTime":"2022-07-13T14:03:25.4906558Z",
          "responseTime":"00:00:00.7280000",
-         "formatedUpdateTime":"332 milliseconds",
+         "formatedLastUpdateTime":"332 milliseconds",
          "formatedResponseTimeTime":"728 milliseconds"
       },
       {
@@ -33,7 +33,7 @@
          "status":"Up",
          "lastUpdateTime":"2022-07-13T13:42:04.3931873",
          "responseTime":"00:00:00.5990000",
-         "formatedUpdateTime":"21 minutes",
+         "formatedLastUpdateTime":"21 minutes",
          "formatedResponseTimeTime":"599 milliseconds"
       }
    ],
@@ -42,7 +42,7 @@
       "status":"Up",
       "lastUpdateTime":"2022-07-13T14:03:25.4906558Z",
       "responseTime":"00:00:00.7280000",
-      "formatedUpdateTime":"332 milliseconds",
+      "formatedLastUpdateTime":"332 milliseconds",
       "formatedResponseTimeTime":"728 milliseconds"
    }
 }
