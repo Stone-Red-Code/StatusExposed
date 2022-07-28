@@ -28,7 +28,7 @@
                         </TextEdit>
                     </Field>
                 </Validation>
-                @if (File.Exists(GeneralSettings.Value.FilePaths.LegalNoticePath))
+                @if (File.Exists(GeneralSettings.Value.FilePaths.LegalNotice))
                 {
                     <Validation Validator="ValidationRule.IsChecked">
                         <Check TValue="bool" Disabled="isLoading">

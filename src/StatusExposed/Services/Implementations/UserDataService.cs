@@ -50,7 +50,7 @@ public class UserDataService : IUserDataService
 
         statusInformation.Subscribers.Add(new Subscriber(user.Email));
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
 
         return (true, null);
     }
@@ -80,7 +80,7 @@ public class UserDataService : IUserDataService
 
         mainDatabaseContext.Subscriber.RemoveRange(entriesToDelete);
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
 
         return (true, null);
     }
@@ -114,11 +114,16 @@ public class UserDataService : IUserDataService
             return;
         }
 
+        if (user.ApiKeys.Count >= await GetSiteApiKeysLimitAsync())
+        {
+            return;
+        }
+
         ApiKey apiKey = new ApiKey(TokenGenerator.GenerateToken("api", user.Id, 64));
 
         user.ApiKeys.Add(apiKey);
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task RemoveApiKeyAsync(ApiKey apiKey)
@@ -130,9 +135,9 @@ public class UserDataService : IUserDataService
             return;
         }
 
-        user.ApiKeys.Remove(apiKey);
+        _ = user.ApiKeys.Remove(apiKey);
 
-        await mainDatabaseContext.SaveChangesAsync();
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task<List<ApiKey>?> GetApiKeysAsync()
@@ -140,5 +145,10 @@ public class UserDataService : IUserDataService
         User? user = await authenticationService.GetUserAsync();
 
         return user?.ApiKeys;
+    }
+
+    public async Task<int> GetSiteApiKeysLimitAsync()
+    {
+        return await Task.Run(() => 5);
     }
 }

@@ -30,7 +30,7 @@
                 <span class="oi oi-plus" aria-hidden="true"></span> Add site
             </NavLink>
         </div>
-        @if (File.Exists(GeneralSettings.Value.FilePaths.ApiInfoPath))
+        @if (File.Exists(GeneralSettings.Value.FilePaths.ApiInfo))
         {
             <div class="nav-item px-3">
                 <NavLink class="nav-link" href="api">
@@ -84,7 +84,7 @@
 <div class="ml-1 text-white-50" style=" position: fixed; bottom: 0; left: 0; z-index: 999">
     <a href="https://github.com/Stone-Red-Code/StatusExposed/blob/main/LICENCE" class="text-white-50">©@DateTime.UtcNow.Year</a>
 
-    @if (File.Exists(GeneralSettings.Value.FilePaths.LegalNoticePath))
+    @if (File.Exists(GeneralSettings.Value.FilePaths.LegalNotice))
     {
         <span> - <a href="legal" class="text-white-50">Legal Notice</a></span>
     }

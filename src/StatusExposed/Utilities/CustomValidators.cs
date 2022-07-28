@@ -16,7 +16,7 @@ public static class CustomValidators
             return;
         }
 
-        if (Regex.IsMatch(domain, @"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]"))
+        if (Regex.IsMatch(domain, @"(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]", RegexOptions.None, TimeSpan.FromSeconds(10)) && Uri.CheckHostName(domain) != UriHostNameType.Unknown)
         {
             e.Status = ValidationStatus.Success;
             return;

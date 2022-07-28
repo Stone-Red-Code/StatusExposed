@@ -53,6 +53,8 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task RegisterUserAsync(string email)
     {
+        email = email.Trim().ToLower();
+
         string mailToken = TokenGenerator.GenerateToken("mail");
 
         User user = new User(email)
@@ -101,6 +103,8 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<(bool Success, string? Message)> LoginUserAsync(string email)
     {
+        email = email.Trim().ToLower();
+
         User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
 
         if (user is null)
@@ -112,7 +116,7 @@ public class AuthenticationService : IAuthenticationService
         {
             string? banReason = user.Permissions.FirstOrDefault(p => p.Name.StartsWith("banreason:"))?.Name;
 
-            return !string.IsNullOrWhiteSpace(banReason) ? ((bool Success, string? Message))(false, $"Ban reason: {banReason.Split(':')[1]}") : ((bool Success, string? Message))(false, null);
+            return !string.IsNullOrWhiteSpace(banReason) ? ((bool Success, string? Message))(false, $"Ban reason: {banReason.Split(':')[1].Replace('_', ' ')}") : ((bool Success, string? Message))(false, null);
         }
 
         string mailToken = TokenGenerator.GenerateToken("mail", user.Id);
@@ -162,11 +166,7 @@ public class AuthenticationService : IAuthenticationService
             return false;
         }
 
-        user.Permissions.Clear();
-
         mainDatabaseContext.Subscriber.RemoveRange(mainDatabaseContext.Subscriber.Where(s => s.Email == user.Email));
-
-        _ = await mainDatabaseContext.SaveChangesAsync();
 
         _ = mainDatabaseContext.Users.Remove(user);
 
@@ -177,6 +177,8 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<bool> UserExistsAsync(string email)
     {
+        email = email.Trim().ToLower();
+
         return await mainDatabaseContext.Users.AnyAsync(u => u.Email == email);
     }
 
@@ -215,6 +217,8 @@ public class AuthenticationService : IAuthenticationService
 
     private async Task SendVerificationEmail(string email, string mailToken)
     {
+        email = email.Trim().ToLower();
+
         string verificationLink = navigationManager.ToAbsoluteUri($"/login/{HttpUtility.UrlEncode(mailToken)}").ToString();
 
         if (File.Exists(mailOptions.TemplatePaths?.AccountVerification))
@@ -230,6 +234,8 @@ public class AuthenticationService : IAuthenticationService
 
     private async Task SendDeletionEmail(string email, string deletionToken)
     {
+        email = email.Trim().ToLower();
+
         string verificationLink = navigationManager.ToAbsoluteUri($"/logout/{HttpUtility.UrlEncode(deletionToken)}").ToString();
 
         if (File.Exists(mailOptions.TemplatePaths?.AccountDeletion))

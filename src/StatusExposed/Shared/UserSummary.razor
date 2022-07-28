@@ -4,6 +4,7 @@
 @using System.Globalization
 
 @inject IAdminDataService AdminDataService
+@inject IMessageService MessageService
 
 @if (User is not null)
 {
@@ -13,6 +14,8 @@
         E-mail: @User.Email
         <br />
         Verified: @User.IsVerified
+        <br />
+        Banned: @User.IsBanned
         <br />
         Last login date: @User.LastLoginDate.ToString("R", CultureInfo.CreateSpecificCulture("en-US"))
         <br />
@@ -52,14 +55,11 @@
             </TableBody>
         </Table>
 
-        @if (User.IsBanned)
-        {
-            <Button Color="Color.Danger" Clicked="SetUserBan">Unban user</Button>
-        }
-        else
-        {
-            <Button Color="Color.Danger" Clicked="SetUserBan">Ban user</Button>
-        }
+         <Button Margin="Margin.Is3.OnX.FromEnd" Color="Color.Danger" Clicked="SetUserBan">
+             @(User.IsBanned ? "Unban User" : "Ban User")
+        </Button>
+
+        <Button Color="Color.Danger" Clicked="DeleteUser">Delete user</Button>
     </p>
 }
 
@@ -107,6 +107,20 @@
         }
 
         await AdminDataService.SetUserBan(User.Email, !User.IsBanned);
+    }
+
+    private async Task DeleteUser()
+    {
+        if (User is null)
+        {
+            return;
+        }
+
+        if (await MessageService.Confirm($"Do you really want to delete the user {User.Email}?", "Delete Account", (o) => { o.CancelButtonText = "No, I'll give them another chance!"; o.ConfirmButtonColor = Color.Danger; }))
+        {
+            await AdminDataService.DeleteUserAsync(User.Email);
+            User = null;
+        }
     }
 
     private void NewRoleValidationStatusChanged(ValidationsStatusChangedEventArgs e)

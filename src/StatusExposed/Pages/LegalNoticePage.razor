@@ -6,7 +6,7 @@
 
 @inject IOptions<GeneralSettings> GeneralSettings
 
-@if(File.Exists(GeneralSettings.Value.FilePaths.LegalNoticePath))
+@if(File.Exists(GeneralSettings.Value.FilePaths.LegalNotice))
 {
-    <Markdown FilePath="@GeneralSettings.Value.FilePaths.LegalNoticePath"/>
+    <Markdown FilePath="@GeneralSettings.Value.FilePaths.LegalNotice"/>
 }

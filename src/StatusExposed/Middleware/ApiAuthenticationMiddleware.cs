@@ -34,6 +34,11 @@ public class ApiAuthenticationMiddleware
 
             if (user is not null)
             {
+                if (user.IsBanned)
+                {
+                    return;
+                }
+
                 context.Request.Headers.Add("X-ClientId", user.Id.ToString());
             }
         }

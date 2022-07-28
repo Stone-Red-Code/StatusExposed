@@ -37,23 +37,45 @@ public class AdminDataService : IAdminDataService
 
     public async Task<User?> GetUserInfoAsync(string email)
     {
+        email = email.Trim().ToLower();
+
         if (!await authorizationService.IsAuthorized("role:admin"))
         {
             return null;
         }
 
-        logger.LogInformation("An Admin requested the data from {email}", email);
+        logger.LogInformation("An admin requested the data from {email}", email);
 
         return await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public Task LogOutUserAsync(string email)
+    public async Task DeleteUserAsync(string email)
     {
-        throw new NotImplementedException();
+        email = email.Trim().ToLower();
+
+        if (!await authorizationService.IsAuthorized("role:admin"))
+        {
+            return;
+        }
+
+        User? user = await mainDatabaseContext.Users.Include(u => u.Permissions).FirstOrDefaultAsync(u => u.Email == email);
+
+        if (user is null)
+        {
+            return;
+        }
+
+        mainDatabaseContext.Subscriber.RemoveRange(mainDatabaseContext.Subscriber.Where(s => s.Email == user.Email));
+
+        _ = mainDatabaseContext.Users.Remove(user);
+
+        _ = await mainDatabaseContext.SaveChangesAsync();
     }
 
     public async Task AddPermissionToUserAsync(string email, Permission permission)
     {
+        email = email.Trim().ToLower();
+
         if (!await authorizationService.IsAuthorized("role:admin"))
         {
             return;
@@ -66,7 +88,7 @@ public class AdminDataService : IAdminDataService
             return;
         }
 
-        logger.LogInformation("An Admin added the permission ({permission}) to the user {email}", permission.Name, email);
+        logger.LogInformation("An admin added the permission ({permission}) to the user {email}", permission.Name, email);
 
         user.Permissions.Add(permission);
 
@@ -75,6 +97,8 @@ public class AdminDataService : IAdminDataService
 
     public async Task RemovePermissionFromUserAsync(string email, Permission permission)
     {
+        email = email.Trim().ToLower();
+
         if (!await authorizationService.IsAuthorized("role:admin"))
         {
             return;
@@ -87,7 +111,7 @@ public class AdminDataService : IAdminDataService
             return;
         }
 
-        logger.LogInformation("An Admin removed the permission ({permission}) to the user {email}", permission.Name, email);
+        logger.LogInformation("An admin removed the permission ({permission}) to the user {email}", permission.Name, email);
 
         _ = user.Permissions.Remove(permission);
 
@@ -96,6 +120,8 @@ public class AdminDataService : IAdminDataService
 
     public async Task SetUserBan(string email, bool isBanned)
     {
+        email = email.Trim().ToLower();
+
         if (!await authorizationService.IsAuthorized("role:admin"))
         {
             return;
@@ -108,9 +134,20 @@ public class AdminDataService : IAdminDataService
             return;
         }
 
-        logger.LogInformation("An Admin {banned} the user {email}", isBanned ? "banned" : "unbanned", email);
+        logger.LogInformation("An admin {banned} the user {email}", isBanned ? "banned" : "unbanned", email);
 
         user.IsBanned = isBanned;
+
+        _ = await mainDatabaseContext.SaveChangesAsync();
+    }
+
+    public async Task PurgeUnverifiedUsersAsync()
+    {
+        IQueryable<User>? entriesToDelete = mainDatabaseContext.Users.Include(u => u.Permissions).Where(u => !u.IsVerified);
+
+        logger.LogInformation("An admin purged {count} unverified users", await entriesToDelete.CountAsync());
+
+        mainDatabaseContext.Users.RemoveRange(entriesToDelete);
 
         _ = await mainDatabaseContext.SaveChangesAsync();
     }
