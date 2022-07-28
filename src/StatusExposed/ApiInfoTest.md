@@ -57,7 +57,17 @@
 
 **Content example**: 
 ```
-<placeholder>
+{
+   "type":"https://tools.ietf.org/html/rfc7231#section-6.5.1",
+   "title":"One or more validation errors occurred.",
+   "status":400,
+   "traceId":"00-3ea5a8cdfe88cc7202c3398b9102f363-e1328277740c25c3-00",
+   "errors":{
+      "domain":[
+         "The domain field is required."
+      ]
+   }
+}
 ```
 
 ---
@@ -68,7 +78,13 @@
 
 **Content example**: 
 ```
-github.com is not tracked
+{
+   "type":"https://tools.ietf.org/html/rfc7231#section-6.5.4",
+   "title":"Not Found",
+   "status":404,
+   "detail":"github.com is not tracked",
+   "traceId":"00-b8b369d6b3bfc903470a05dd9a0945fb-23206b8efe366a0d-00"
+}
 ```
 
 ---
@@ -79,5 +95,10 @@ github.com is not tracked
 
 **Content example**: 
 ```
-API calls quota exceeded! maximum admitted 10 per 1m.
+{
+   "type":"https://tools.ietf.org/html/rfc6585#section-4",
+   "title":"Too Many Requests",
+   "status":429,
+   "detail":"API calls quota exceeded! maximum admitted 5 per 1m. Retry again in 57s."
+}
 ```
