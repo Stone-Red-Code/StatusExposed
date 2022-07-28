@@ -20,6 +20,8 @@
 
         <h3 class="mb-3 mt-5">Management</h3>
 
+        <Button Margin="Margin.Is3.FromBottom" Color="Color.Danger" Clicked="PurgeUnverified" Disabled="unverifiedUsersPurgeIsLoading">Purge Unverified Users</Button>
+
         <Row Margin="Margin.Is0.FromStart">
             <Validations StatusChanged="UserEmailValidationStatusChanged">
                 <Validation @ref="validation" Validator="ValidationRule.IsEmail">
@@ -38,7 +40,7 @@
             <Span Margin="Margin.IsAuto.OnY"><Button Margin="Margin.Is2.FromBottom" Color="Color.Primary" Clicked="GetUser" Disabled="!userEmailIsValid || userDataIsLoading" Loading="userDataIsLoading">Check</Button></Span>
         </Row>
 
-       <UserSummary User="user"/>
+        <UserSummary User="user" />
 
     </Authorized>
     <NotAuthorized>
@@ -57,6 +59,7 @@
     private string? userEmail;
     private bool userDataIsLoading;
     private bool userEmailIsValid;
+    private bool unverifiedUsersPurgeIsLoading;
 
     private Validation validation = null!;
 
@@ -86,6 +89,21 @@
         }
 
         userDataIsLoading = false;
+    }
+
+    private async Task PurgeUnverified()
+    {
+        if (unverifiedUsersPurgeIsLoading)
+        {
+            return;
+        }
+
+        unverifiedUsersPurgeIsLoading = true;
+
+        await AdminDataService.PurgeUnverifiedUsersAsync();
+        notVerifiedUsersCount = 0;
+
+        unverifiedUsersPurgeIsLoading = false;
     }
 
     private void UserEmailValidationStatusChanged(ValidationsStatusChangedEventArgs e)

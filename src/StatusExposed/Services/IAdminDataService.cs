@@ -54,4 +54,10 @@ public interface IAdminDataService
     /// <param name="isBanned">The ban property.</param>
     /// <returns>A <see cref="Task"/> to <see langword="await"/>.</returns>
     Task SetUserBan(string email, bool isBanned);
+
+    /// <summary>
+    /// Purges all unverified users.
+    /// </summary>
+    /// <returns>A <see cref="Task"/> to <see langword="await"/>.</returns>
+    Task PurgeUnverifiedUsersAsync();
 }
