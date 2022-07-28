@@ -116,7 +116,7 @@ public class AuthenticationService : IAuthenticationService
         {
             string? banReason = user.Permissions.FirstOrDefault(p => p.Name.StartsWith("banreason:"))?.Name;
 
-            return !string.IsNullOrWhiteSpace(banReason) ? ((bool Success, string? Message))(false, $"Ban reason: {banReason.Split(':')[1]}") : ((bool Success, string? Message))(false, null);
+            return !string.IsNullOrWhiteSpace(banReason) ? ((bool Success, string? Message))(false, $"Ban reason: {banReason.Split(':')[1].Replace('_', ' ')}") : ((bool Success, string? Message))(false, null);
         }
 
         string mailToken = TokenGenerator.GenerateToken("mail", user.Id);

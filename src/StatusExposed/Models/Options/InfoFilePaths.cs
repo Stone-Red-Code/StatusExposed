@@ -2,6 +2,6 @@
 
 public class InfoFilePaths
 {
-    public string? LegalNoticePath { get; set; }
-    public string? ApiInfoPath { get; set; }
+    public string? LegalNotice { get; set; }
+    public string? ApiInfo { get; set; }
 }

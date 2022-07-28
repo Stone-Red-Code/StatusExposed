@@ -24,7 +24,7 @@
     <meta name="twitter:description" content="Free StatusExposed public API">
 </HeadContent>
 
-@if(File.Exists(GeneralSettings.Value.FilePaths.ApiInfoPath))
+@if(File.Exists(GeneralSettings.Value.FilePaths.ApiInfo))
 {
-    <Markdown FilePath="@GeneralSettings.Value.FilePaths.ApiInfoPath"/>
+    <Markdown FilePath="@GeneralSettings.Value.FilePaths.ApiInfo"/>
 }
