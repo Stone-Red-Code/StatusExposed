@@ -11,6 +11,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="AspNetCoreRateLimit" Version="4.0.2" />
     <PackageReference Include="Blazorise.Bootstrap" Version="1.0.5" />
     <PackageReference Include="Blazorise.Charts" Version="1.0.5" />
